@@ -1,8 +1,8 @@
-## TFM 20-21_clijosor: 
+# TFM 20-21_clijosor: 
 
-# Titulo: Diseño y desarrollo de herramientas que automaticen la explotación de vulnerabilidades/auditoría
+## Titulo: Diseño y desarrollo de herramientas que automaticen la explotación de vulnerabilidades/auditoría
 
-# Herramienta: networkScan
+## Herramienta: networkScan
 
 Esta herramienta se puede lanzar a una máquina, varias máquinas, un rango de ips... y está programada en python 2, aunque utiliza herramientas que están en python 3.
 
@@ -14,14 +14,14 @@ Se tiene pensado mirar más servicios y analizarlos como SMB, FTP, añadir en pu
 
 Una vez acabada la herramienta se tiene pensado añadir dos opciones de intensidad en la herramienta, es decir, si se quiere realizar un escaneo suave o intenso.
 
-# Usage
+## Usage
 
   1) python networkScan.py ip1
   2) python networkScan.py ip1,ip2,ip3,ip4,ip5,...,ipN
   3) python networkScan.py <rango_ips>
   4) python networkScan.py -i <fichero_hosts>
  
- *Ejemplo de <rango_ips>:  192.1.130.1-129
+ *Ejemplo de <rango_ips>:*  192.1.130.1-129
 
 
 
