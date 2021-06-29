@@ -1,0 +1,27 @@
+*~
+*.py[cod]
+*.exe
+*.asc
+venv*/
+.cache/
+.mypy_cache/
+.tox
+.coverage*
+reports/
+.scannerwork/
+
+# PyPI packaging
+/build/
+/dist/
+*.egg-info/
+*.egg
+
+# Snap packaging
+/parts/
+/prime/
+/snap/
+/stage/
+/ssh-audit_*.snap
+
+# Your local server config
+servers.txt
