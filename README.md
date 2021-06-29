@@ -14,6 +14,8 @@ Se tiene pensado mirar más servicios y analizarlos como SMB, FTP, añadir en pu
 
 Una vez acabada la herramienta se tiene pensado añadir dos opciones de intensidad en la herramienta, es decir, si se quiere realizar un escaneo suave o intenso.
 
+Otro objetivo es que no salgan por consola los resultados de las herramientas que se van lanzando y en su lugar salgan trazas de texto o una barra de progreso. Esto esta todavia en desarrollo.
+
 ## Usage
 
   1) python networkScan.py ip1
