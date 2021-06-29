@@ -29,6 +29,7 @@ Otro objetivo es que no salgan por consola los resultados de las herramientas qu
   4) python networkScan.py -i <fichero_hosts>
  
  *Ejemplo de <rango_ips>:*  192.1.130.1-129
+ 
 
 
 
