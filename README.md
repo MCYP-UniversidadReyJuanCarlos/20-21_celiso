@@ -6,7 +6,12 @@
 
 Esta herramienta se puede lanzar a una máquina, varias máquinas, un rango de ips... y está programada en python 2, aunque utiliza herramientas que están en python 3.
 
-De momento la herramienta realiza descubrimiento de puertos con nmap, si las máquinas tienen puertos SSH abiertos se mira los cifrados débiles y si existe enumeración de usuarios y si las máquinas tienen puertos SSL abiertos se le realiza el testssl. Cuando la herramienta acaba de realizar todos los análisis, saca un informe en HTML con el resultado del análisis de cada IP.
+De momento la herramienta realiza:
+
+  - Descubrimiento de puertos con nmap
+  - Si las máquinas tienen puertos SSH abiertos se mira los cifrados débiles y si existe enumeración de usuarios.
+  - Si las máquinas tienen puertos SSL abiertos se le realiza el testssl. Cuando la herramienta acaba de realizar todos los análisis.
+  - Saca un informe en HTML con el resultado del análisis de cada IP.
 
 Las herramientas necesarias están en el repositorio. Aún así más adelante se tiene pensado comprobar desde networkScan si se tienen todos los modulos de python instalados, herramientas, etc.
 
