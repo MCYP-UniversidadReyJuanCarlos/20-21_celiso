@@ -30,6 +30,10 @@ Otro objetivo es que no salgan por consola los resultados de las herramientas qu
  
  *Ejemplo de <rango_ips>:*  192.1.130.1-129
  
+ ## Notes:
+ 
+ El exploit sshUsernameEnumeration.py funciona con python3, a pesar de tener instalado el módulo de paramiko y en la version que es debida, debido a problemas que existian con el exploit hay que tener en cuenta estos cambios: https://github.com/agentgoblin/CVE-2018-15473-Exploit/commit/93607da515ead436d64958cdc9962081e62482e0 
+ 
 
 
 
