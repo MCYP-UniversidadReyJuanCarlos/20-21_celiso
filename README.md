@@ -4,7 +4,7 @@
 
 ## Herramienta: networkScan
 
-Esta herramienta se puede lanzar a una máquina, varias máquinas, un rango de ips... y está programada en python 2, aunque utiliza herramientas que están en python 3.
+Esta herramienta se puede lanzar a una máquina, varias máquinas, un rango de ips... y está programada en python y utiliza herramientas que están en python o en bash.
 
 De momento la herramienta realiza:
 
