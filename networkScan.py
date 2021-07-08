@@ -20,17 +20,15 @@ dir_data_testssl = "TLS/testssl_"
 version = []
 
 
-def testssl():
+def testssl(TLSlist):
     print("\n-------------  TESTSSL -------------\n")
     
     for host in TLSlist:
-        print(host)
         data = host.split(":")
-        print(data)
         os.system(dir_testssl + " --json-pretty "+host)
         os.system("mv " +data[0] +"_p" +data[1] +"* "+ dir_data_testssl + data[0] +"_p" + data[1] +".json")
 
-def ssh_audit():
+def ssh_audit(SSHlist):
     print("\n-------------  SSH-AUDIT -------------\n")
     for host in SSHlist:
         host = host.split(":")
@@ -51,7 +49,7 @@ def ssh_audit():
         else:
             version.append("0")
 
-def ssh_enum():
+def ssh_enum(SSHlist):
     print("\n-------------  SSH-ENUM -------------\n")
     j=0
     datos = []
@@ -60,7 +58,7 @@ def ssh_enum():
 
     for i in version:
         i=float(i)
-        if i>2.1 and i<7.8:
+        if i<7.8:
             os.system("python3 " +dir_ssh + "/sshUsernameEnumExploit.py " + datos[j][0] +" --port "+ datos[j][1] + " --userList " + dir_ssh + "/userList.txt > " + dir_data_ssh + "enum_"+ datos[j][0] +"_"+ datos[j][1] +".txt")
         elif i==0.0:
             print("No se ha podido evaluar la enumeracion de usuarios por ssh en la maquina " + datos[j][0] + " en el puerto " + datos[j][1])
@@ -70,8 +68,8 @@ def ssh_enum():
 
 def crea_fich(name_fich, list):
     with open (name_fich, 'w') as f:
-    for line in list:
-        f.write("%s\n" % line)
+        for line in list:
+            f.write("%s\n" % line)
 
 def nmap(hosts):
     print("\n-------------  NMAP TCP -------------\n")
@@ -152,6 +150,7 @@ def operaciones(ips):
 
     nmap(ips)
     SSHlist, TLSlist, SMBlist = parse.nmap_TCP_xml_parser()
+
     if len(SSHlist)>0:
         ssh_audit(SSHlist)
         ssh_enum(SSHlist)
@@ -176,8 +175,8 @@ def main():
         if len(argumentos) == 0 or len(argumentos)>1:
     	    raise Exception("Argumentos mal introducidos\nUsage: " + usage)
         else:
-            comprobar_herramientas()
-            comprobar_modulos()
+            #comprobar_herramientas()
+            #comprobar_modulos()
             comprobar_directorios()
 
         if opciones.inputFile and os.path.isfile(argumentos[0]):
