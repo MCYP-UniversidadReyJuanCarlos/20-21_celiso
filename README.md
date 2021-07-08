@@ -4,7 +4,7 @@
 
 ## Herramienta: networkScan
 
-Esta herramienta se puede lanzar a una máquina, varias máquinas, un rango de ips... y está programada en python 2, aunque utiliza herramientas que están en python 3.
+Esta herramienta se puede lanzar a una máquina, varias máquinas, un rango de ips... y está programada en python que utiliza herramientas que están en bash y python.
 
 De momento la herramienta realiza:
 
@@ -32,8 +32,9 @@ Otro objetivo es que no salgan por consola los resultados de las herramientas qu
  
  ## Notes:
  
- El exploit sshUsernameEnumeration.py funciona con python3, a pesar de tener instalado el módulo de paramiko y en la version que es debida, debido a problemas que existian con el exploit hay que tener en cuenta estos cambios: https://github.com/agentgoblin/CVE-2018-15473-Exploit/commit/93607da515ead436d64958cdc9962081e62482e0 
- 
+El exploit sshUsernameEnumeration.py funciona con python3, a pesar de tener instalado el módulo de paramiko y en la version que es debida, debido a problemas que existian con el exploit hay que tener en cuenta estos cambios: https://github.com/agentgoblin/CVE-2018-15473-Exploit/commit/93607da515ead436d64958cdc9962081e62482e0 
+
+ssh-audit también funciona con python3.
 
 
 
