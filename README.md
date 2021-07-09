@@ -1,6 +1,6 @@
 # Trabajo de Fin de Máster 20-21_clijosor
 
-## Titulo:  networkScan: Herramienta de escaneos automáticos en redes corporativas
+## Titulo --> networkScan: Herramienta de escaneos automáticos en redes corporativas
 
 Autor/a: Celia Lijó Soria
 
@@ -28,7 +28,7 @@ Otro objetivo es que no salgan por consola los resultados de las herramientas qu
 
 También se tiene pensado añadir una tabla de visibilidad de cada máquina, es decir, una tabla en la que se vean los puertos TCP/UDP que están abiertos y con que servicios.
 
-Por último se quiere añadir comprobaciones de que todas las herramientas o odulos de python necesarios están en su sitio o instalados.
+Por último se quiere añadir comprobaciones de que todas las herramientas o módulos de python necesarios están en su sitio o instalados.
 
 ## Usage
 
@@ -52,7 +52,7 @@ Por último se quiere añadir comprobaciones de que todas las herramientas o odu
 - ssh-audit: https://github.com/arthepsy/ssh-audit
 
 - Enumeración de usuarios ssh: https://github.com/Rhynorater/CVE-2018-15473-Exploit
-    - Nota: Hay que hacer esta modificación  https://github.com/agentgoblin/CVE-2018-15473-Exploit/commit/93607da515ead436d64958cdc9962081e62482e0
+    - Nota: Hay que hacer esta modificación --> https://github.com/agentgoblin/CVE-2018-15473-Exploit/commit/93607da515ead436d64958cdc9962081e62482e0
 
 - testssl: https://github.com/drwetter/testssl.sh
 
