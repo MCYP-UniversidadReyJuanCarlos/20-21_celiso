@@ -16,9 +16,19 @@ dir_ssh = "Herramientas/ssh"
 dir_data_ssh = "SSH/ssh_"
 dir_testssl = "Herramientas/testssl/testssl.sh"
 dir_data_testssl = "TLS/testssl_"
-
 version = []
 
+#En desarrollo
+def ftp(FTPlist):
+    print("\n-------------  FTP MAP -------------\n")
+    #for host in FTPlist:
+    #    os.system(dir_ftp + " " + host[0] +":"+host[1]+".json "+host[0]+":"+host[1])
+
+#En desarrollo
+def smb(SMBlist):
+    print("\n-------------  SMB MAP -------------\n")
+    #for host in SMBlist:
+    #    os.system(dir_smb + " " + host[0] +":"+host[1]+".json "+host[0]+":"+host[1])
 
 def testssl(TLSlist):
     print("\n-------------  TESTSSL -------------\n")
@@ -30,6 +40,7 @@ def testssl(TLSlist):
 
 def ssh_audit(SSHlist):
     print("\n-------------  SSH-AUDIT -------------\n")
+
     for host in SSHlist:
         host = host.split(":")
         os.system("python3 " + dir_ssh + "/ssh-audit/ssh-audit.py " + host[0] +" -p " + host[1] + " > " + dir_data_ssh + "audit_" + host[0] + "_" + host[1]+".xml")
@@ -99,7 +110,7 @@ def hosts(datos):
     else: #si contiene espacios o "-"
         ips = datos
 
-    print("\nSe van a analizar los siguientes datos: ")
+    print("\nSe van a analizar los siguientes ips: ")
     ip = ips.split(" ")
     for i in ip:
         print(i)
@@ -120,11 +131,11 @@ def leer_fich(fich):
     f.close()
     return datos
 
-#falta por desarrollar
+#En desarrollo
 def comprobar_herramientas():
     print("comprobando si están las herramientas necesarias...")
 
-#falta por desarrollar
+#En desarrollo
 def comprobar_modulos():
     print("comprobando si están los modulos necesarios...")
 
@@ -143,6 +154,10 @@ def comprobar_directorios():
         print('Se crea la carpeta TLS que no existe.')
         os.mkdir("TLS")
 
+    if not os.path.isdir("SMB"):
+        print('Se crea la carpeta SMB que no existe.')
+        os.mkdir("SMB")
+
 def operaciones(ips):
     SSHlist = []
     TLSlist = []
@@ -150,7 +165,7 @@ def operaciones(ips):
 
     nmap(ips)
     SSHlist, TLSlist, SMBlist = parse.nmap_TCP_xml_parser()
-
+    
     if len(SSHlist)>0:
         ssh_audit(SSHlist)
         ssh_enum(SSHlist)
@@ -161,7 +176,7 @@ def operaciones(ips):
     parse.main()
 
 def main():
-    usage = "\n\t1) %prog ip1,ip2,ip3,ip4,ip5,...,ipN\t or \t %prog <range_ips>\n\t2) %prog -i hosts.txt"
+    usage = "\n\t1)%prog ip1,ip2,ip3,ip4,ip5,...,ipN\n\t2)%prog -i hosts.txt"
     argumentos = sys.argv[1:]
     parser = OptionParser(usage)
 
@@ -175,6 +190,7 @@ def main():
         if len(argumentos) == 0 or len(argumentos)>1:
     	    raise Exception("Argumentos mal introducidos\nUsage: " + usage)
         else:
+            #En desarollo
             #comprobar_herramientas()
             #comprobar_modulos()
             comprobar_directorios()
@@ -184,8 +200,7 @@ def main():
             datos = quitar_ultimo_elemento(datos)
             ips=hosts(datos)
             operaciones(ips)
-            nmap(ips)
-        elif opciones.inputFile and os.path.isfile(argumentos[0])==false:
+        elif opciones.inputFile and os.path.isfile(argumentos[0]) == False:
             raise Exception("Argumentos mal introducidos\nUsage: " + usage)
         else:
             ips=hosts(argumentos[0])  

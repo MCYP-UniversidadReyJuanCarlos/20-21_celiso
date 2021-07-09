@@ -82,16 +82,17 @@ def imprimir_ipsList (lista):
     num_vulns = 0
     num_ips = 0
     for elem in lista:
+        print("\n")
         print(elem.ip)
         for vul in elem.vulnerabilidades:
-            print(vul.titulo + " " + vul.descripcion)
             num_vulns = num_vulns + 1
+            print(str(num_vulns) + ". " + vul.titulo + " " + vul.descripcion)
+            
         num_ips = num_ips + 1
     print("Hay "+ str(num_ips) + " con " + str(num_vulns) + " vulnerabilidades")
 
 def get_cvss (severidad):
     cvss = 0
-
     if severidad == "CRITICAL":
         cvss = 10
     elif severidad == "HIGH":
@@ -140,7 +141,6 @@ def parse_ssh_audit():
         datos=leer_fich(dir_data_ssh + "_audit_" + h[0] + "_" + h[1] + ".xml")
 
         if datos!="":
-
             datos = datos.split("\n")
 
             for linea in datos:
@@ -179,7 +179,7 @@ def parse_ssh_enum():
     for host in SSHlist:
         vulnList = []
         existe_ip = False
-        descripcion = "The following valid users have been listed: "
+        descripcion = "-"
         count_valid_user = 0
         pos_ip = 0
         vuln = ""
@@ -189,21 +189,21 @@ def parse_ssh_enum():
         datos=leer_fich(dir_data_ssh + "_enum_" + h[0] + "_" + h[1] + ".txt")
         if datos!="":
             datos = datos.split("\n")
-            for linea in datos:
-                if "is a valid user!" in linea:
-                    l = linea.split(" ")
-                    if count_valid_user == 0:
-                        descripcion = descripcion + " " + l[0]
-                    else:
-                        descripcion = descripcion + ", " + l[0]
-                    count_valid_user = count_valid_user + 1
-            descripcion = descripcion + "."
+            if datos[0]!="Target host most probably is not vulnerable or already patched, exiting...":
+                descripcion = "The following valid users have been listed: "
+                for linea in datos:
+                    if "is a valid user!" in linea:
+                        l = linea.split(" ")
+                        if count_valid_user == 0:
+                            descripcion = descripcion + " " + l[0]
+                        else:
+                            descripcion = descripcion + ", " + l[0]
+                        count_valid_user = count_valid_user + 1
+                descripcion = descripcion + "."
 
-            vuln = textTohtml.Vulnerabilidad(7, "HIGH", h[1], "CVE-2018-15473", "-", "OpenSSH < 7.7 - User Enumeration", descripcion)
-            vulnList.append(vuln)
+                vuln = textTohtml.Vulnerabilidad(7, "HIGH", h[1], "CVE-2018-15473", "-", "OpenSSH < = 7.7 - User Enumeration", descripcion)
+                vulnList.append(vuln)
 
-            print(vulnList)
-            
             for iteration,item in enumerate(ipsList):
                 if item.ip == h[0]:
                     existe_ip = True
@@ -215,7 +215,7 @@ def parse_ssh_enum():
                 data = textTohtml.Ip(h[0], vulnList)
                 ipsList.append(data)
 
-        #Si conseguimos sacar los datos del sshUserEnum en json
+        #Si queremos sacar los datos del sshUserEnum en json
         #if datos!="":
             #dt=json.loads(datos)
             #if len(dt['Valid'])>0:
@@ -239,8 +239,7 @@ def parse_tls():
                     if i['severity'] == "CRITICAL" or i['severity'] == "HIGH" or i['severity'] == "MEDIUM" or i['severity'] == "LOW" or i['severity'] == "INFO":
                         aniadir_vuln(vuelta, h[0], h[1], i['severity'], "-", "-", "Offeres deprecated protocol " + str(i['id']), "-")
                     vuelta = vuelta +1
-
-                #Si queremos guardar los cifrados para decir cuales afectan a las vulns...
+                #Si queremos guardar los cifrados
                 #for i in severity['fs']:
                     #if i['severity'] == "CRITICAL" or i['severity'] == "HIGH" or i['severity'] == "MEDIUM" or i['severity'] == "LOW":
                         #d = str(i['finding'])
@@ -254,9 +253,47 @@ def parse_tls():
 
                 for i in severity['vulnerabilities']:
                     if i['severity'] == "CRITICAL" or i['severity'] == "HIGH" or i['severity'] == "MEDIUM" or i['severity'] == "LOW" or i['severity'] == "INFO":
-                        aniadir_vuln(vuelta, h[0], h[1], i['severity'], i["cve"], i["cwe"], i["id"], i["finding"])
+                        if i['id'] == "secure_client_renego":
+                            aniadir_vuln(vuelta, h[0], h[1], i['severity'], i["cve"], i["cwe"], "Secure client renegotiation", i["finding"])
+                        else:
+                            aniadir_vuln(vuelta, h[0], h[1], i['severity'], i["cve"], i["cwe"], i["id"], i["finding"])
                     vuelta = vuelta +1
 
+                for i in severity['headerResponse']:
+                    if i['severity'] == "CRITICAL" or i['severity'] == "HIGH" or i['severity'] == "MEDIUM" or i['severity'] == "LOW":
+                        if i['id'] == "HSTS":
+                            aniadir_vuln(vuelta, h[0], h[1], "MEDIUM", "-", "CWE-693", "Missing security header HSTS", " Security header Strict-Transport-Security not offered.")
+                        elif i['id'] == "security_headers" and str(i['finding']) == "--":
+                            aniadir_vuln(vuelta, h[0], h[1], "INFO", "-", "CWE-693", "Missing security headers", "missing: X-FRAME-OPTIONS, X-XSS-SECURITY, Content Security Policy, Cache Control...")
+                        else:
+                            aniadir_vuln(vuelta, h[0], h[1], i['severity'], "-", "-", i["id"], i["finding"])
+
+                    if i['severity'] == "INFO":
+                        if i['id'] == "banner_server" and i['finding'] != "No Server banner line in header, interesting!":
+                            aniadir_vuln(vuelta, h[0], h[1], "LOW", "-", "CWE-200", "Information Disclousure", "Server header exposed: " + i["finding"])
+                        if i['id'] == "cookie_count" and i['finding'] == "0 at '/' (30x detected, better try target URL of 30x)":
+                            aniadir_vuln(vuelta, h[0], h[1], "LOW", "-", "CWE-614", "Sentitive Cookie without 'Secure' Flag", "-")
+                            aniadir_vuln(vuelta, h[0], h[1], "LOW", "-", "CWE-1004", "Sentitive Cookie without'HTTPOnly' Flag", "-")
+                    vuelta = vuelta +1
+
+                for i in severity['serverPreferences']:
+                    if i['severity'] == "CRITICAL" or i['severity'] == "HIGH" or i['severity'] == "MEDIUM" or i['severity'] == "LOW":
+                        if i['id'] == "FS":
+                            aniadir_vuln(vuelta, h[0], h[1], "LOW", "-", "CWE-327", "SSL/TLS Forward Secrecy Cipher Suites Not Supported", i["finding"])
+                    vuelta = vuelta + 1
+                    
+                for i in severity['serverDefaults']:
+                    if i['severity'] == "CRITICAL" or i['severity'] == "HIGH" or i['severity'] == "MEDIUM" or i['severity'] == "LOW":
+                        if i['id'] == "cert_chain_of_trust":
+                            aniadir_vuln(vuelta, h[0], h[1], "LOW", "-", "CWE-327", "SSL/TLS Forward Secrecy Cipher Suites Not Supported", i["finding"])
+                    if i['id'] == "cert_expirationStatus":
+                        if "expired" in i['finding']:
+                            aniadir_vuln(vuelta, h[0], h[1], "LOW", "-", "CWE-298", "Certificate expired", i["finding"])
+                        else:
+                            cad = i['finding'].split(" ")
+                            if int(cad[0]) > 396:
+                                aniadir_vuln(vuelta, h[0], h[1], "LOW", "-", "-", "Long Certificate Validity", i["finding"] + " --- More than 13 months is way too long")
+                    vuelta = vuelta + 1
 
 def nmap_TCP_xml_parser():
     tree = ET.parse(dir_nmap_tcp)
@@ -289,16 +326,20 @@ def nmap_TCP_xml_parser():
 
 def main():
   
-    nmap_TCP_xml_parser()
     if len(SSHlist)>0:
         parse_ssh_audit()
         parse_ssh_enum()
     if len(TLSlist)>0:
         parse_tls()
-    
-    print("\nOrdenamos vulnerabilidades...")
+
+    #Para imprimir la lista de vulnerabilidades
+    #print("LISTA SIN ORDENAR:")
+    #imprimir_ipsList(ipsList)
     ordenar_ipsList()
-    print("\nCreando el informe de resultados...")
+    #Para imprimir la lista de vulnerabilidades ordenada
+    #print("\nLISTA ORDENADA:")
+    #imprimir_ipsList(ipsList_ordenada)
+
     textTohtml.envuelveDatosEnHTML(ipsList_ordenada)
     
 

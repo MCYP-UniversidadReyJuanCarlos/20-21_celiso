@@ -8,7 +8,6 @@ import warnings
 
 warnings.filterwarnings("ignore")
 
-
 critical_style = "critical_vulnerability"
 high_style = "high_vulnerability"
 medium_style = "medium_vulnerability"
@@ -37,10 +36,9 @@ def envuelveDatosEnHTML(ipList):
     import datetime
     from webbrowser import open_new_tab
 
-    print("Generando informe ...")
-
     ahora = datetime.datetime.today().strftime("%Y%m%d-%H%M%S")
 
+    print("Generando informe ...")
 
     nombreArchivo = "Vulnerability_Assesment_Report_" + ahora + ".html"
     f = open(nombreArchivo,'wb')
@@ -51,7 +49,7 @@ def envuelveDatosEnHTML(ipList):
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="./Herramientas/HTML/salesforce-lightning-design-system.css">
+    <link rel="stylesheet" href="./Herramientas/HTML/salesforce-lightning-design-system.min.css">
     <title>Report</title>
     <style>
         .slds-theme_warning {
@@ -256,12 +254,11 @@ def envuelveDatosEnHTML(ipList):
 
     f.write(data_html)
     f.close()
-    print("\nInforme generado con exito!!")
 
+    print("\nInforme generado con exito!!")
 
 def main():
     print("Generando informe ...")
-    #envuelveDatosEnHTML()
     print("\nInforme generado con exito!!")
 
 if __name__ == "__main__":
