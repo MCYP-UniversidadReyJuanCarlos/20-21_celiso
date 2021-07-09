@@ -1,6 +1,6 @@
 # Trabajo de Fin de Máster 20-21_clijosor
 
-## Titulo --> networkScan: Herramienta de escaneos automáticos en redes corporativas
+## Título --> networkScan: Herramienta de escaneos automáticos en redes corporativas
 
 Autor/a: Celia Lijó Soria
 
@@ -30,7 +30,7 @@ También se tiene pensado añadir una tabla de visibilidad de cada máquina, es 
 
 Por último se quiere añadir comprobaciones de que todas las herramientas o módulos de python necesarios están en su sitio o instalados.
 
-## Usage
+## Uso de la herramienta:
 
   1) python networkScan.py ip1
   2) python networkScan.py ip1,ip2,ip3,ip4,ip5,...,ipN
@@ -39,7 +39,7 @@ Por último se quiere añadir comprobaciones de que todas las herramientas o mó
  
  *Ejemplo de <rango_ips>:*  192.1.130.1-129
  
- ## Notes:
+ ## Notas:
  
   - El exploit sshUsernameEnumeration.py funciona con python3, a pesar de tener instalado el módulo de paramiko y en la version que es debida, debido a problemas que existian con el exploit hay que tener en cuenta estos cambios: https://github.com/agentgoblin/CVE-2018-15473-Exploit/commit/93607da515ead436d64958cdc9962081e62482e0 
 
