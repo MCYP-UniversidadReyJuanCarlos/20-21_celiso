@@ -1,10 +1,10 @@
-# Trabajo de Fin de Máster 20-21_clijosor: 
+# Trabajo de Fin de Máster 20-21_clijosor
 
 ## Titulo:  networkScan: Herramienta de escaneos automáticos en redes corporativas
 
-## Autor/a: Celia Lijó Soria
+Autor/a: Celia Lijó Soria
 
-## Tutor/a: Marta Beltrán Pardo
+Tutor/a: Marta Beltrán Pardo
 
 
 ## Herramienta: networkScan
