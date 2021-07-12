@@ -9,26 +9,43 @@ Tutor/a: Marta Beltrán Pardo
 
 ## Herramienta: networkScan
 
-Esta herramienta se puede lanzar a una máquina, varias máquinas, un rango de ips... y está programada en python que utiliza herramientas que están en bash y python.
-
-De momento la herramienta realiza:
+networkScan es una herramienta para la realización de escaneos automáticos en redes 
+corporativas que está implementada en python. Esta herramienta se realiza para facilitar y 
+ayudar al usuario a la hora de analizar una red corporativa para tener una visión general del 
+estado de la misma, ya que la propia red puede ser muy grande y si no se necesitaría emplear 
+mucho tiempo en el análisis de la misma. Gracias a esta herramienta podremos centrarnos en 
+explotar los aspectos de la red que la herramienta nos muestre que son más vulnerables.
+Esta herramienta se puede lanzar a una máquina, varias máquinas, un rango de ips... y para 
+realizar los escaneos se sirve de otras herramientas que están en bash y python.
+De momento la herramienta realiza::
 
   - Descubrimiento de puertos con nmap
   - Si las máquinas tienen puertos SSH abiertos se mira los cifrados débiles y si existe enumeración de usuarios.
-  - Si las máquinas tienen puertos SSL abiertos se le realiza el testssl. Cuando la herramienta acaba de realizar todos los análisis.
-  - Saca un informe en HTML con el resultado del análisis de cada IP.
+  - Si las máquinas tienen puertos SSL abiertos se le realiza el testssl. 
+  - Cuando la herramienta acaba de realizar todos los análisis, saca un informe en HTML con el resultado del análisis de cada IP.
 
-Las herramientas necesarias están en el repositorio. Aún así más adelante se tiene pensado comprobar desde networkScan si se tienen todos los modulos de python instalados, herramientas, etc.
+Las herramientas necesarias están en el repositorio. Aun así más adelante se tiene pensado 
+comprobar desde networkScan si se tienen todos los módulos de python instalados, 
+herramientas, etc.
 
-Se tiene pensado mirar más servicios y analizarlos como SMB, FTP, añadir en puertos SSL fuzzing de directorios...
+De momento las herramientas que utiliza networkScan son nmap, ssh-audit, exploit de 
+enumeración de usuarios ssh, testssl…
 
-Una vez acabada la herramienta se tiene pensado añadir dos opciones de intensidad en la herramienta, es decir, si se quiere realizar un escaneo suave o intenso.
+Se tiene pensado mirar más servicios y analizarlos como SMB, FTP, añadir en puertos SSL 
+fuzzing de directorios...
 
-Otro objetivo es que no salgan por consola los resultados de las herramientas que se van lanzando y en su lugar salgan trazas de texto o una barra de progreso. Esto esta todavia en desarrollo.
+Una vez acabada la herramienta se tiene pensado añadir dos opciones de intensidad en la 
+herramienta, es decir, si se quiere realizar un escaneo suave o intenso.
 
-También se tiene pensado añadir una tabla de visibilidad de cada máquina, es decir, una tabla en la que se vean los puertos TCP/UDP que están abiertos y con que servicios.
+Otro objetivo es que no salgan por consola los resultados de las herramientas que se van 
+lanzando y en su lugar salgan trazas de texto o una barra de progreso. Esto esta todavía en
+desarrollo.
 
-Por último se quiere añadir comprobaciones de que todas las herramientas o módulos de python necesarios están en su sitio o instalados.
+También se tiene pensado añadir una tabla de visibilidad de cada máquina, es decir, una tabla 
+en la que se vean los puertos TCP/UDP que están abiertos y con qué servicios.
+
+Por último se quiere añadir comprobaciones de que todas las herramientas o módulos de 
+python necesarios están en su sitio o instalados
 
 ## Uso de la herramienta:
 
