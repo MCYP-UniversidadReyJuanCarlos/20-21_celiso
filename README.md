@@ -15,9 +15,11 @@ ayudar al usuario a la hora de analizar una red corporativa para tener una visi�
 estado de la misma, ya que la propia red puede ser muy grande y si no se necesitaría emplear 
 mucho tiempo en el análisis de la misma. Gracias a esta herramienta podremos centrarnos en 
 explotar los aspectos de la red que la herramienta nos muestre que son más vulnerables.
+
 Esta herramienta se puede lanzar a una máquina, varias máquinas, un rango de ips... y para 
 realizar los escaneos se sirve de otras herramientas que están en bash y python.
-De momento la herramienta realiza::
+
+De momento la herramienta realiza:
 
   - Descubrimiento de puertos con nmap
   - Si las máquinas tienen puertos SSH abiertos se mira los cifrados débiles y si existe enumeración de usuarios.
