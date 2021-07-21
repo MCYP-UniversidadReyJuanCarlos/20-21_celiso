@@ -135,28 +135,45 @@ def leer_fich(fich):
 def comprobar_herramientas():
     print("comprobando si están las herramientas necesarias...")
 
+    if not os.path.isfile(dir_ssh + "/ssh-audit/ssh-audit.py"):
+        raise Exception("No existe la herramienta ssh-audit.py en: ./" + dir_ssh + "/ssh-audit/ssh-audit.py")
+    if not os.path.isfile(dir_ssh + "/sshUsernameEnumExploit.py"):
+        raise Exception("No existe la herramienta sshUsernameEnumExploit.py en: ./" + dir_ssh + "/sshUsernameEnumExploit.py")
+    if not os.path.isfile(dir_ssh + "/userList.txt"):
+        raise Exception("No existe el listado de usuarios comunes en: ./" + dir_ssh + "/userList.txt")
+    if not os.path.isfile("Herramientas/HTML/salesforce-lightning-design-system.min.css"):
+        raise Exception("No existe la hoja de estilo salesforce-lightning-design-system.min.css: ./Herramientas/HTML/salesforce-lightning-design-system.min.css")
+    if not os.path.isfile("parse.py"):
+        raise Exception("No existe el módulo parse.py")
+    if not os.path.isfile("textTohtml.py"):
+        raise Exception("No existe el módulo textTohtml.py")
+    if not os.path.isfile("htmlTopdf.py"):
+        raise Exception("No existe el módulo htmlTopdf.py")
+
 #En desarrollo
 def comprobar_modulos():
     print("comprobando si están los modulos necesarios...")
+    #pip list | grep pdfkit
+    #echo $? --> este comando da cero si el anterior existe, es decir, está instalado y sino da 1
 
 def comprobar_directorios():
     print("comprobando si están los directorios necesarios...")
 
     if not os.path.isdir("NMAP"):
-        print('Se crea la carpeta NMAP que no existe.')
+        print('Se crea la carpeta NMAP.')
         os.mkdir("NMAP")
 
     if not os.path.isdir("SSH"):
-        print('Se crea la carpeta SSH que no existe.')
+        print('Se crea la carpeta SSH.')
         os.mkdir("SSH")
 
     if not os.path.isdir("TLS"):
-        print('Se crea la carpeta TLS que no existe.')
+        print('Se crea la carpeta TLS.')
         os.mkdir("TLS")
 
-    if not os.path.isdir("SMB"):
-        print('Se crea la carpeta SMB que no existe.')
-        os.mkdir("SMB")
+    #if not os.path.isdir("SMB"):
+        #print('Se crea la carpeta SMB.')
+        #os.mkdir("SMB")
 
 def operaciones(ips):
     SSHlist = []
@@ -165,6 +182,7 @@ def operaciones(ips):
 
     nmap(ips)
     SSHlist, TLSlist, SMBlist = parse.nmap_TCP_xml_parser()
+    
     
     if len(SSHlist)>0:
         ssh_audit(SSHlist)
@@ -191,8 +209,8 @@ def main():
     	    raise Exception("Argumentos mal introducidos\nUsage: " + usage)
         else:
             #En desarollo
-            #comprobar_herramientas()
             #comprobar_modulos()
+            comprobar_herramientas()
             comprobar_directorios()
 
         if opciones.inputFile and os.path.isfile(argumentos[0]):

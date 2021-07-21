@@ -6,11 +6,13 @@ from optparse import OptionParser
 import xml.etree.ElementTree as ET
 import warnings
 import textTohtml
+import htmlTopdf
 
 warnings.filterwarnings("ignore")
 
 
 dir_nmap_tcp = "NMAP/nmap_TCP_full.xml"
+dir_nmap_udp = "NMAP/nmap_UDP_top-50.xml"
 dir_data_ssh = "SSH/ssh"
 dir_testssl = "TLS/testssl_"
 
@@ -20,6 +22,7 @@ ipsList_ordenada = []
 SSHlist = []
 TLSlist = []
 SMBlist = []
+PortsList = []
 
 def leer_fich(fich):
     datos=""
@@ -52,7 +55,7 @@ def aniade_vulns_ordenadas(lista, num_criticas , num_altas, num_medias, num_baja
             if vuln.cvss == 0:
                 vulnList.append(vuln)
 
-    data = textTohtml.Ip(lista.ip, vulnList)
+    data = textTohtml.Ip(lista.ip, vulnList, lista.data_ports)
     ipsList_ordenada.append(data)
 
 def ordenar_ipsList():
@@ -81,15 +84,24 @@ def ordenar_ipsList():
 def imprimir_ipsList (lista):
     num_vulns = 0
     num_ips = 0
+    
     for elem in lista:
+        num_ports = 0
         print("\n")
         print(elem.ip)
+        print("\nVulnerabilities:")
         for vul in elem.vulnerabilidades:
             num_vulns = num_vulns + 1
             print(str(num_vulns) + ". " + vul.titulo + " " + vul.descripcion)
             
         num_ips = num_ips + 1
-    print("Hay "+ str(num_ips) + " con " + str(num_vulns) + " vulnerabilidades")
+
+        print("\nPorts:")
+        for port in elem.data_ports:
+            num_ports = num_ports + 1
+            print(str(num_ports) + "." + port.protocol + " " + port.port)
+
+    print("\nHay "+ str(num_ips) + " con " + str(num_vulns) + " vulnerabilidades")
 
 def get_cvss (severidad):
     cvss = 0
@@ -106,6 +118,7 @@ def get_cvss (severidad):
 
 def aniadir_vuln(vuelta, ip, puerto, severidad, cve, cwe, titulo, descripcion):
     vulnList = []
+    portList = []
     existe_ip = False
     pos_ip = 0
     vuln = ""
@@ -122,10 +135,10 @@ def aniadir_vuln(vuelta, ip, puerto, severidad, cve, cwe, titulo, descripcion):
         if existe_ip:
             ipsList[pos_ip].vulnerabilidades.extend(vulnList)
         else:
-            data = textTohtml.Ip(ip, vulnList)
+            data = textTohtml.Ip(ip, vulnList, portList)
             ipsList.append(data)
     elif vuln != "":
-        data = textTohtml.Ip(ip, vulnList)
+        data = textTohtml.Ip(ip, vulnList, portList)
         ipsList.append(data)
 
 def parse_ssh_audit():
@@ -136,6 +149,7 @@ def parse_ssh_audit():
         existe_ip = False
         pos_ip = 0
         vulnList = []
+        portList = []
 
         h = host.split(":")
         datos=leer_fich(dir_data_ssh + "_audit_" + h[0] + "_" + h[1] + ".xml")
@@ -172,12 +186,13 @@ def parse_ssh_audit():
             if existe_ip:
                 ipsList[pos_ip].vulnerabilidades.extend(vulnList)
             else:
-                data = textTohtml.Ip(h[0], vulnList)
+                data = textTohtml.Ip(h[0], vulnList, portList)
                 ipsList.append(data)
 
 def parse_ssh_enum():
     for host in SSHlist:
         vulnList = []
+        portList = []
         existe_ip = False
         descripcion = "-"
         count_valid_user = 0
@@ -212,7 +227,7 @@ def parse_ssh_enum():
             if existe_ip:
                 ipsList[pos_ip].vulnerabilidades.extend(vulnList)
             else:
-                data = textTohtml.Ip(h[0], vulnList)
+                data = textTohtml.Ip(h[0], vulnList , portList)
                 ipsList.append(data)
 
         #Si queremos sacar los datos del sshUserEnum en json
@@ -295,6 +310,84 @@ def parse_tls():
                                 aniadir_vuln(vuelta, h[0], h[1], "LOW", "-", "-", "Long Certificate Validity", i["finding"] + " --- More than 13 months is way too long")
                     vuelta = vuelta + 1
 
+def aniadir_puerto(vuelta, ip, protocolo, puerto, servicio, producto, version, estado):
+    portList = []
+    vulnList = []
+    existe_ip = False
+    existe_puerto = False
+    pos_ip = 0
+    port = ""
+
+    if puerto != "-" and puerto != "":
+        port = textTohtml.Ports(protocolo, puerto, servicio, producto, version, estado)
+        portList.append(port)
+
+        if vuelta > 0:
+            for iteration,item in enumerate(ipsList):
+                if item.ip == ip:
+                    existe_ip = True
+                    pos_ip = iteration
+                    break
+            if existe_ip:
+                for item in ipsList:
+                    for i in item.data_ports:
+                        if i.protocol == protocolo and  i.port == puerto:
+                            existe_puerto = True
+                            break
+                if not existe_puerto:     
+                    ipsList[pos_ip].data_ports.extend(portList)
+            else:
+                data = textTohtml.Ip(ip, vulnList, portList)
+                ipsList.append(data)
+        else:
+            for iteration,item in enumerate(ipsList):
+                if item.ip == ip:
+                    existe_ip = True
+                    pos_ip = iteration
+                    break
+            if existe_ip:
+                ipsList[pos_ip].data_ports.extend(portList)
+            else:
+                data = textTohtml.Ip(ip, vulnList, portList)
+                ipsList.append(data)
+
+def nmap_parser(dir):
+    tree = ET.parse(dir)
+    root = tree.getroot()
+
+    for host in root.iter('host'):
+        IPaddr = '-'
+        protocol='-'
+        p='-'
+        service='-'
+        prod='-'
+        version='-'
+        state='-'
+        for address in host.iter('address'):
+            vuelta = 0
+            if "ipv4" in (address.attrib['addrtype']):
+                IPaddr = (address.attrib['addr'])
+                for ports in host.iter('ports'):
+                    for port in ports.iter('port'):
+                        for state in port.iter('state'):
+                            if state.attrib['state'] == "open":
+                                protocol = port.attrib['protocol']
+                                p = port.attrib['portid']
+                                s = state.attrib['state']
+                                for service in port.iter('service'):
+                                    atributos = service.attrib
+                                    if "name" in atributos:
+                                        serv = service.attrib['name']
+                                    if "version" in atributos:
+                                        v = service.attrib['version']
+                                    if "product" in atributos:
+                                        prod = service.attrib['product']
+                        data_port = str(IPaddr) + ":" + str(protocol) + ":" + str(p) + ":" + str(serv) + ":" + str(prod) + ":" + str(v) + ":" + str(s)
+                        PortsList.append(data_port)
+                        aniadir_puerto (vuelta, IPaddr, protocol, p, serv, prod, v, s)
+                        vuelta = vuelta + 1
+
+
 def nmap_TCP_xml_parser():
     tree = ET.parse(dir_nmap_tcp)
     root = tree.getroot()
@@ -324,8 +417,16 @@ def nmap_TCP_xml_parser():
                                     pass
     return SSHlist, TLSlist, SMBlist
 
+
 def main():
-  
+    
+    #se añade para una prueba
+    #nmap_TCP_xml_parser()
+
+    #para sacar los datos de los puertos
+    nmap_parser(dir_nmap_tcp)
+    nmap_parser(dir_nmap_udp)
+
     if len(SSHlist)>0:
         parse_ssh_audit()
         parse_ssh_enum()
@@ -340,8 +441,15 @@ def main():
     #print("\nLISTA ORDENADA:")
     #imprimir_ipsList(ipsList_ordenada)
 
-    textTohtml.envuelveDatosEnHTML(ipsList_ordenada)
-    
+    nombreHtml1 = textTohtml.envuelveDatosEnHTML(ipsList_ordenada)
+
+    nombreHtml= htmlTopdf.envuelveDatosEnHTML(ipsList_ordenada)
+
+    htmlTopdf.ToPdf(nombreHtml)
+
+    os.system("cp "+ nombreHtml1 + " " + nombreHtml)
+    os.system("rm " + nombreHtml1)
+
 
 if __name__ == "__main__":
     main()

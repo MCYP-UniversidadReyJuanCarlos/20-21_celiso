@@ -14,8 +14,16 @@ medium_style = "medium_vulnerability"
 low_style = "low_vulnerability"
 info_style = "info_vulnerability"
 
-class Vulnerabilidad:
+class Ports:
+    def __init__(self, protocol, port, service, product, version, state):
+        self.protocol = protocol
+        self.port = port
+        self.service = service
+        self.product = product
+        self.version = version
+        self.state = state
 
+class Vulnerabilidad:
     def __init__(self, cvss, severidad, puerto, cve, cwe, titulo, descripcion):
         self.cvss = cvss
         self.severidad = severidad
@@ -26,10 +34,10 @@ class Vulnerabilidad:
         self.descripcion = descripcion
 
 class Ip:
-
-    def __init__(self, ip, vulnerabilidades):
+    def __init__(self, ip, vulnerabilidades, data_ports):
         self.ip = ip
         self.vulnerabilidades = vulnerabilidades
+        self.data_ports = data_ports
 
 
 def envuelveDatosEnHTML(ipList):
@@ -38,12 +46,12 @@ def envuelveDatosEnHTML(ipList):
 
     ahora = datetime.datetime.today().strftime("%Y%m%d-%H%M%S")
 
-    print("Generando informe ...")
+    print("Generando informe en HTML...")
 
-    nombreArchivo = "Vulnerability_Assesment_Report_" + ahora + ".html"
-    f = open(nombreArchivo,'wb')
+    nombreArchivo = "Vulnerability_Assesment_Report_" + ahora + "_1.html"
+    f = open(nombreArchivo,'w')
 
-    data_html="""<!DOCTYPE html>
+    data_html = data_html + """<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -55,7 +63,64 @@ def envuelveDatosEnHTML(ipList):
         .slds-theme_warning {
             color: white !important;
         }
+
+        .slds-theme_warning, .slds-theme--warning{
+        background-color:#fe9339;
+        color:#080707;
+        }
+        .slds-theme_warning a, .slds-theme--warning a{
+        color:#080707;
+        text-decoration:underline;
+        }
+        .slds-theme_warning a:link, .slds-theme_warning a:visited, .slds-theme--warning a:link, .slds-theme--warning a:visited{
+        color:#080707;
+        }
+        .slds-theme_warning a:hover, .slds-theme_warning a:focus, .slds-theme--warning a:hover, .slds-theme--warning a:focus{
+        text-decoration:none;
+        }
+        .slds-theme_warning a:focus, .slds-theme--warning a:focus{
+        -webkit-box-shadow:0 0 3px #514f4d;
+                box-shadow:0 0 3px #514f4d;
+        border:1px solid #514f4d;
+        }
+        .slds-theme_warning a:active, .slds-theme--warning a:active{
+        color:#514f4d;
+        }
+        .slds-theme_warning a[disabled], .slds-theme--warning a[disabled]{
+        color:#514f4d;
+        }
+        .slds-theme_warning button, .slds-theme--warning button{
+        color:#514f4d;
+        text-decoration:underline;
+        }
+        .slds-theme_warning button:hover, .slds-theme--warning button:hover{
+        color:#706e6b;
+        }
+        .slds-theme_warning button:focus, .slds-theme--warning button:focus{
+        color:#514f4d;
+        -webkit-box-shadow:0 0 3px #514f4d;
+                box-shadow:0 0 3px #514f4d;
+        border:1px solid #514f4d;
+        }
+        .slds-theme_warning button:active, .slds-theme--warning button:active{
+        color:#706e6b;
+        }
+        .slds-theme_warning .slds-icon,
+        .slds-theme_warning .slds-button__icon, .slds-theme--warning .slds-icon,
+        .slds-theme--warning .slds-button__icon{
+        fill:#514f4d;
+        }
         
+        .slds-theme_error, .slds-theme--error{
+        color:white;
+        background-color:#ea001e;
+        }
+
+        .slds-theme_success, .slds-theme--success{
+        color:white;
+        background-color:#2e844a;
+        }
+
         ul > li {
             list-style-type: circle;
         }
@@ -85,8 +150,9 @@ def envuelveDatosEnHTML(ipList):
             color: white;
         }
     </style>
-</head>
-<body>
+</head>"""
+
+    data_html = data_html + """<body>
     <div class="slds-m-horizontal_xx-large">
         <div class="slds-text-heading_large">
             </br>
@@ -100,7 +166,7 @@ def envuelveDatosEnHTML(ipList):
             <ul>"""
     j=1
     for ip in ipList:
-        data_html = data_html + """<li class="slds-wrap slds-m-horizontal_xx-large"><a href="#ip-"""+ str(j) + """">VULNERABILITY ASSESMENT OF """ + ip.ip + "</a></li></br>"
+        data_html = data_html + """<li class="slds-wrap slds-m-horizontal_xx-large"><a href="#ip-"""+ str(j) + """">VULNERABILITIES ASSESMENT OF """ + ip.ip + "</a></li></br>"
         j = j + 1
 
     data_html = data_html + """</ul>
@@ -129,10 +195,10 @@ def envuelveDatosEnHTML(ipList):
                 num_info = num_info + 1
 
         data_html = data_html + """<div id="ip-""" + str(j) + """">
-            <h3  class="slds-text-heading_small"><b>VULNERABILITY ASSESMENT OF """ + ip.ip + """</b></h3>
+            <h3  class="slds-text-heading_small"><b>VULNERABILITIES ASSESMENT OF """ + ip.ip + """</b></h3>
             <div class="slds-m-horizontal_xx-large">
                 <br/></br>
-                <ul class="slds-text-heading_small"><li>Vulnerability summary:</li></ul>
+                <ul class="slds-text-heading_small"><li>Vulnerabilities summary:</li></ul>
                 <br/></br>
                 <div class="slds-grid slds-wrap slds-m-horizontal_xx-large">
                     <div class="slds-col slds-size_1-of-5">
@@ -177,29 +243,91 @@ def envuelveDatosEnHTML(ipList):
                     </div>
                 </div>
             </div>
+
             <div class="slds-m-horizontal_xx-large">
                 <br/></br>
-                <ul class="slds-text-heading_small"><li>Vulnerability table:</li></ul>
+                <ul class="slds-text-heading_small"><li>Equipment visibility:</li></ul>
                 <br/></br>
                 <table class="slds-table slds-table_cell-buffer slds-no-row-hover slds-table_bordered slds-table_col-bordered" aria-label="Example table of Opportunities with vertical borders"> 
                     <thead>
                         <tr class="slds-line-height_reset">
                             <th class="" scope="col">
+                                <div class="slds-truncate" title="IP">IP</div>
+                            </th>
+                            <th class="" scope="col">
+                                <div class="slds-truncate" title="Protocol">Protocol</div>
+                            </th>
+                            <th class="" scope="col">
+                                <div class="slds-truncate" title="Port1">Port</div>
+                            </th>
+                            <th class="" scope="col">
+                                <div class="slds-truncate" title="Service">Service</div>
+                            </th>
+                            <th class="" scope="col">
+                                <div class="slds-truncate" title="Product">Product</div>
+                            </th>
+                            <th class="" scope="col">
+                                <div class="slds-truncate" title="Version">Version</div>
+                            </th>
+                            <th class="" scope="col">
+                                <div class="slds-truncate" title="State">State</th></div>
+                            </th>
+                    </tr>
+                    </thead>
+                    <tbody>"""
+        
+        for port in ip.data_ports:
+            data_html = data_html + """<tr class="slds-hint-parent">
+                            <td data-label="IP">
+                                <div class="slds-truncate">""" + ip.ip + """</div>
+                            </td>
+                            <td data-label="Port">
+                                <div class="slds-truncate">""" + port.protocol + """</div>
+                            </td>
+                            <td data-label="Port">
+                                <div class="slds-truncate">""" + port.port + """</div>
+                            </td>
+                            <td data-label="Service">
+                                <div class="slds-truncate">""" + port.service + """</div>
+                            </td>
+                            <td data-label="Product">
+                                <div class="slds-truncate">""" + port.product + """</div>
+                            </td>
+                            <td data-label="Version">
+                                <div class="slds-truncate">""" + port.version +  """</div>
+                            </td>
+                            <td data-label="State">
+                                <div class="slds-truncate">""" + port.state + """</div>
+                            </td>
+                        </tr>"""
+
+        data_html = data_html + """</tbody>
+                </table>
+            </div>
+
+            <div class="slds-m-horizontal_xx-large">
+                <br/></br>
+                <ul class="slds-text-heading_small"><li>List of vulnerabilities:</li></ul>
+                <br/></br>
+                <table class="slds-table slds-table_cell-buffer slds-no-row-hover slds-table_bordered slds-table_col-bordered" aria-label="Example table of Opportunities with vertical borders"> 
+                    <thead>
+                        <tr class="slds-line-height_reset">
+                            <th class="slds-col slds-size_1-of-6">
                                 <div class="slds-truncate" title="Severity">Severity</div>
                             </th>
-                            <th class="" scope="col">
+                            <th class="slds-col slds-size_1-of-6">
                                 <div class="slds-truncate" title="Port">Port</div>
                             </th>
-                            <th class="" scope="col">
+                            <th class="slds-col slds-size_1-of-6">
                                 <div class="slds-truncate" title="CVE">CVE</div>
                             </th>
-                            <th class="" scope="col">
+                            <th class="slds-col slds-size_1-of-6">
                                 <div class="slds-truncate" title="CWE">CWE</div>
                             </th>
-                            <th class="" scope="col">
+                            <th class="slds-col slds-size_1-of-6">
                                 <div class="slds-truncate" title="Title">Title</div>
                             </th>
-                            <th class="" scope="col">
+                            <th class="slds-col slds-size_1-of-6">
                                 <div class="slds-truncate" title="Description">Description</div>
                             </th>
                         </tr>
@@ -220,11 +348,11 @@ def envuelveDatosEnHTML(ipList):
                 style = info_style
 
             data_html = data_html + """<tr class="slds-hint-parent">
-                            <th data-label="Severity" scope="row">
+                            <td data-label="Severity" scope="row">
                                 <div class="slds-truncate">
-                                    <div class="slds-text-align_center slds-box slds-box_xx-small slds-size_1-of-2 """ + style + '">' + vuln.severidad + """</div>
+                                    <div class="slds-text-align_center slds-box slds-box_xx-small slds-size_1-of-1 """ + style + '">' + vuln.severidad + """</div>
                                 </div>
-                            </th>
+                            </td>
                             <td data-label="Port">
                                 <div class="slds-truncate">""" + vuln.puerto + """</div>
                             </td>
@@ -245,21 +373,21 @@ def envuelveDatosEnHTML(ipList):
         data_html = data_html + """</tbody>
                 </table>
             </div>
-            <hr size="2px" color="grey" />
-        </div>"""
-    
-    data_html = data_html + """    </div>
+        <hr size="2px" color="grey" />
+    </div>
 </body>
 </html>"""
 
     f.write(data_html)
     f.close()
 
-    print("\nInforme generado con exito!!")
+    print("\nHTML generado con exito!!")
+
+    return nombreArchivo
 
 def main():
-    print("Generando informe ...")
-    print("\nInforme generado con exito!!")
+    print("Generando informe en HTML...")
+    print("\nHTML generado con exito!!")
 
 if __name__ == "__main__":
     main()
