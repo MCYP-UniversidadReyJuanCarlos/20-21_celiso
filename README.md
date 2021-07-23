@@ -21,10 +21,11 @@ realizar los escaneos se sirve de otras herramientas que están en bash y python
 
 De momento la herramienta realiza:
 
+  - Se realiza una comprobación de directorios, módulos y herramientas que son necesarios para el uso de la herramienta.
   - Descubrimiento de puertos con nmap
   - Si las máquinas tienen puertos SSH abiertos se mira los cifrados débiles y si existe enumeración de usuarios.
   - Si las máquinas tienen puertos SSL abiertos se le realiza el testssl. 
-  - Cuando la herramienta acaba de realizar todos los análisis, saca un informe en HTML con el resultado del análisis de cada IP.
+  - Cuando la herramienta acaba de realizar todos los análisis, saca un informe en HTML con el resultado del análisis de cada IP y en PDF. Este informe incluye un índice y por cada IP una tabla de recuento de vulnerabilidades, una tabla de visibilidad de cada máquina, es decir, una tabla en la que se vean los puertos TCP/UDP que están abiertos y con qué servicios y una tabla de vulnerabilidades.
 
 Las herramientas necesarias están en el repositorio. Aun así más adelante se tiene pensado 
 comprobar desde networkScan si se tienen todos los módulos de python instalados, 
@@ -42,12 +43,6 @@ herramienta, es decir, si se quiere realizar un escaneo suave o intenso.
 Otro objetivo es que no salgan por consola los resultados de las herramientas que se van 
 lanzando y en su lugar salgan trazas de texto o una barra de progreso. Esto esta todavía en
 desarrollo.
-
-También se tiene pensado añadir una tabla de visibilidad de cada máquina, es decir, una tabla 
-en la que se vean los puertos TCP/UDP que están abiertos y con qué servicios.
-
-Por último se quiere añadir comprobaciones de que todas las herramientas o módulos de 
-python necesarios están en su sitio o instalados
 
 ## Prerequisitos:
 
