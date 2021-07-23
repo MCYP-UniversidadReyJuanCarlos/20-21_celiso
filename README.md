@@ -27,14 +27,12 @@ De momento la herramienta realiza:
   - Si las máquinas tienen puertos SSL abiertos se le realiza el testssl. 
   - Cuando la herramienta acaba de realizar todos los análisis, saca un informe en HTML con el resultado del análisis de cada IP y en PDF. Este informe incluye un índice y por cada IP una tabla de recuento de vulnerabilidades, una tabla de visibilidad de cada máquina, es decir, una tabla en la que se vean los puertos TCP/UDP que están abiertos y con qué servicios y una tabla de vulnerabilidades.
 
-Las herramientas necesarias están en el repositorio. Aun así más adelante se tiene pensado 
-comprobar desde networkScan si se tienen todos los módulos de python instalados, 
-herramientas, etc.
+Las herramientas necesarias están en el repositorio. 
 
 De momento las herramientas que utiliza networkScan son nmap, ssh-audit, exploit de 
 enumeración de usuarios ssh, testssl…
 
-Se tiene pensado mirar más servicios y analizarlos como SMB, FTP, añadir en puertos SSL 
+Se tiene pensado mirar más servicios y analizarlos como SMB, FTP, TELNET, DNS, añadir en puertos SSL 
 fuzzing de directorios...
 
 Una vez acabada la herramienta se tiene pensado añadir dos opciones de intensidad en la 
