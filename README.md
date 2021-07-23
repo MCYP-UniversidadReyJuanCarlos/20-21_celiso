@@ -45,6 +45,7 @@ desarrollo.
 ## Prerequisitos:
 
 - Es necesario tener instalado "wkhtmltopdf": sudo apt-get install wkhtmltopdf
+
 - Instalar el archivo "requirements.txt": pip install -r requirements.txt
 
 ## Uso de la herramienta:
