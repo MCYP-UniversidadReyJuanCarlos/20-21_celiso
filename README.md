@@ -49,6 +49,11 @@ en la que se vean los puertos TCP/UDP que están abiertos y con qué servicios.
 Por último se quiere añadir comprobaciones de que todas las herramientas o módulos de 
 python necesarios están en su sitio o instalados
 
+## Prerequisitos:
+
+- Es necesario tener instalado "wkhtmltopdf": sudo apt-get install wkhtmltopdf
+- Instalar el archivo "requirements.txt": pip install -r requirements.txt
+
 ## Uso de la herramienta:
 
   1) python networkScan.py ip1
