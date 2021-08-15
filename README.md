@@ -44,19 +44,52 @@ desarrollo.
 
 ## Prerequisitos:
 
-- Es necesario tener instalado "wkhtmltopdf": sudo apt-get install wkhtmltopdf
+- Es necesario tener instalado "wkhtmltopdf": 
+  - sudo apt-get install wkhtmltopdf
 
-- Instalar el archivo "requirements.txt": pip install -r requirements.txt
+- Es necesario  tener instalado “smbmap” en Linux, suele estar instalado pero conviene comprobarlo antes de lanzar networkScan y sino instalarlo: 
+  - sudo apt-get install smbmap
+
+- Es necesario tener instalado “metasploit” en Linux, suele estar instalado pero conviene comprobarlo antes de lanzar networkScan y sino instalarlo:
+  - sudo apt-get update
+  - sudo apt install curl
+  - curl https://raw.githubusercontent.com/rapid7/metasploit-omnibus/master/config/templates/metasploit-framework-wrappers/msfupdate.erb > msfinstall && chmod 755 msfinstall && ./msfinstall
+  - ./msfinstall
+
+- Instalar el archivo "requirements.txt": 
+  - pip install -r requirements.txt
 
 ## Uso de la herramienta:
 
-  1) python networkScan.py ip1
-  2) python networkScan.py ip1,ip2,ip3,ip4,ip5,...,ipN
-  3) python networkScan.py <rango_ips>
-  4) python networkScan.py -i <fichero_hosts>
- 
- *Ejemplo de <rango_ips>:*  192.1.130.1-129
- 
+Formas de lanzar la herramienta:
+
+- python3 networkscan.py [URI]
+- python3 networkscan.py [options] [URI]
+- python3 networkscan.py [options]
+
+Formas de uso y opciones:
+
+1)	python3 networkscan.py [URI], donde [URI] es:
+
+  - [URI]:   ip | ip1-N | ip1,ip2,ip3,ip4,ip5,...   por defecto se lanza el modo ligero
+
+2)	python3 networkscan.py [options] [URI]", donde [URI] es:
+
+  - [URI]:  ip | ip1-N | ip1,ip2,ip3,ip4,ip5,...   
+
+    y [options] es/son:
+
+  - -l, --light:  Opción para lanzar el escaneo en modo ligero
+  - -a, --aggressive:  Opción para lanzar el escaneo en modo agresivo
+
+3)	python3 networkscan.py [options]", donde [options] debe ir siempre acompañado de un archivo de entrada o de un [URI] como el anterior, excepto la opción de ayuda:
+
+  - -h, --help:  Opción de ayuda, lo que se está viendo ahora.
+  - -i, --input-file [file]:  El campo [URI] se introduce a través de un fichero de texto. Este archivo contiene la IP, IPs o rango de IPs a analizar.
+  - -l, --light:  Opción para lanzar el escaneo en modo ligero
+  - -a, --aggressive:  Opción para lanzar el escaneo en modo agresivo
+
+   
  ## Notas:
  
   - El exploit sshUsernameEnumeration.py funciona con python3, a pesar de tener instalado el módulo de paramiko y en la version que es debida, debido a problemas que existian con el exploit hay que tener en cuenta estos cambios: https://github.com/agentgoblin/CVE-2018-15473-Exploit/commit/93607da515ead436d64958cdc9962081e62482e0 
@@ -73,6 +106,10 @@ desarrollo.
     - Nota: Hay que hacer esta modificación --> https://github.com/agentgoblin/CVE-2018-15473-Exploit/commit/93607da515ead436d64958cdc9962081e62482e0
 
 - testssl: https://github.com/drwetter/testssl.sh
+
+- metasploit: https://www.metasploit.com/
+
+- smbmap: https://github.com/ShawnDEvans/smbmap
 
 - css: https://www.lightningdesignsystem.com/resources/downloads/
 
