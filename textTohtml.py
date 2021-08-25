@@ -4,6 +4,8 @@
 import os, sys, json
 from optparse import OptionParser
 import xml.etree.ElementTree as ET
+import datetime
+from webbrowser import open_new_tab
 import warnings
 
 warnings.filterwarnings("ignore")
@@ -13,6 +15,19 @@ high_style = "high_vulnerability"
 medium_style = "medium_vulnerability"
 low_style = "low_vulnerability"
 info_style = "info_vulnerability"
+
+class ListDirectories:
+    def __init__(self, method, HTTPResponse, content_lenght, dir, redir):
+        self.method = method
+        self.HTTPResponse = HTTPResponse
+        self.content_lenght = content_lenght
+        self.dir = dir
+        self.redir = redir
+
+class Directories:
+    def __init__(self, port, list_directories):
+        self.port = port
+        self.list_directories = list_directories
 
 class Ports:
     def __init__(self, protocol, port, service, product, version, state):
@@ -34,24 +49,23 @@ class Vulnerabilidad:
         self.descripcion = descripcion
 
 class Ip:
-    def __init__(self, ip, vulnerabilidades, data_ports):
+    def __init__(self, ip, vulnerabilidades, data_ports, directories):
         self.ip = ip
         self.vulnerabilidades = vulnerabilidades
         self.data_ports = data_ports
+        self.directories = directories
 
 
-def envuelveDatosEnHTML(ipList):
-    import datetime
-    from webbrowser import open_new_tab
+def envuelveDatosEnHTML(ipList, modo_agresivo, list_http):
 
     ahora = datetime.datetime.today().strftime("%Y%m%d-%H%M%S")
 
-    print("Generando informe en HTML...")
+    print("\nGenerating HTML report...")
 
     nombreArchivo = "Vulnerability_Assesment_Report_" + ahora + "_1.html"
     f = open(nombreArchivo,'w')
 
-    data_html = data_html + """<!DOCTYPE html>
+    data_html = """<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -369,10 +383,70 @@ def envuelveDatosEnHTML(ipList):
                                 <div class="slds-truncate slds-line-clamp">""" + vuln.descripcion + """</div>
                             </td>
                         </tr>"""
-
         data_html = data_html + """</tbody>
                 </table>
-            </div>
+            </div>"""
+
+        existe = False
+
+        for h in list_http:
+            lh = h.split(":")
+            if ip.ip == lh[0]:
+                existe = True
+                break
+
+        if modo_agresivo and existe:
+            data_html = data_html + """<div class="slds-m-horizontal_xx-large">
+                    <br/></br>
+                    <ul class="slds-text-heading_small"><li> Directory listing :</li></u>"""
+
+            for dir in ip.directories:
+                data_html = data_html + """<br/></br>
+                    <ol><li class="slds-m-horizontal_xx-large" type="disc">Port """ + dir.port + """:</li></ol>
+                    <br/></br>
+                    <table class="slds-table slds-table_cell-buffer slds-no-row-hover slds-table_bordered slds-table_col-bordered" aria-label="Example table of Opportunities with vertical borders"> 
+                        <thead>
+                            <tr class="slds-line-height_reset">
+                                <th class="" scope="col">
+                                    <div class="slds-truncate" title="Method">Method</div>
+                                </th>
+                                <th class="" scope="col">
+                                    <div class="slds-truncate" title="HTTPResponse">HTTP Response</div>
+                                </th>
+                                <th class="" scope="col">
+                                    <div class="slds-truncate" title="Content-Lenght">Content-lenght</div>
+                                </th>
+                                <th class="" scope="col">
+                                    <div class="slds-truncate" title="Directory">Directory</div>
+                                </th>
+                                <th class="" scope="col">
+                                    <div class="slds-truncate" title="Redirection">Redirection</div>
+                                </th>
+                        </tr>
+                        </thead>
+                        <tbody>"""
+                for d in dir.list_directories:
+                    data_html = data_html + """<tr class="slds-hint-parent">
+                                <td data-label="Method">
+                                    <div class="slds-truncate">""" + d.method + """</div>
+                                </td>
+                                <td data-label="HTTPResponse">
+                                    <div class="slds-truncate">""" + str(d.HTTPResponse) + """</div>
+                                </td>
+                                <td data-label="Content-Lenght">
+                                    <div class="slds-truncate">""" + d.content_lenght + """</div>
+                                </td>
+                                <td data-label="Directory">
+                                    <div class="slds-truncate">""" + d.dir + """</div>
+                                </td>
+                                <td data-label="Redirection">
+                                    <div class="slds-truncate">""" + d.redir + """</div>
+                                </td>
+                            </tr>"""
+                data_html = data_html + """</tbody>
+                    </table>"""
+
+        data_html = data_html + """</div>
         <hr size="2px" color="grey" />
     </div>
 </body>
@@ -381,13 +455,13 @@ def envuelveDatosEnHTML(ipList):
     f.write(data_html)
     f.close()
 
-    print("\nHTML generado con exito!!")
+    print("\nHTML successfully generated!!")
 
     return nombreArchivo
 
 def main():
-    print("Generando informe en HTML...")
-    print("\nHTML generado con exito!!")
+    print("\nGenerating HTML report...")
+    print("\nHTML successfully generated!!")
 
 if __name__ == "__main__":
     main()

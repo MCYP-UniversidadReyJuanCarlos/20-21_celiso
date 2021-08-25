@@ -10,11 +10,13 @@ import htmlTopdf
 
 warnings.filterwarnings("ignore")
 
-
+#variables globales
 dir_nmap_tcp = "NMAP/nmap_TCP_full.xml"
 dir_nmap_udp = "NMAP/nmap_UDP_top-50.xml"
-dir_data_ssh = "SSH/ssh"
-dir_testssl = "TLS/testssl_"
+dir_ssh = "SSH/ssh"
+dir_testssl = "WEB/TLS/testssl_"
+dir_dirsearch = "WEB/FUZZING/dirsearch_"
+modo_agresivo = False
 
 ipsList = []
 ipsList_ordenada = []
@@ -22,7 +24,9 @@ ipsList_ordenada = []
 SSHlist = []
 TLSlist = []
 SMBlist = []
-PortsList = []
+FTPlist = []
+TLNTlist = []
+HTTPlist = []
 
 def leer_fich(fich):
     datos=""
@@ -55,7 +59,7 @@ def aniade_vulns_ordenadas(lista, num_criticas , num_altas, num_medias, num_baja
             if vuln.cvss == 0:
                 vulnList.append(vuln)
 
-    data = textTohtml.Ip(lista.ip, vulnList, lista.data_ports)
+    data = textTohtml.Ip(lista.ip, vulnList, lista.data_ports, lista.directories)
     ipsList_ordenada.append(data)
 
 def ordenar_ipsList():
@@ -87,21 +91,69 @@ def imprimir_ipsList (lista):
     
     for elem in lista:
         num_ports = 0
-        print("\n")
-        print(elem.ip)
-        print("\nVulnerabilities:")
+        num_ips = num_ips + 1
+        print("\n* " + elem.ip + " *")
+        print("\nList of vulnerabilities:\n")
         for vul in elem.vulnerabilidades:
             num_vulns = num_vulns + 1
-            print(str(num_vulns) + ". " + vul.titulo + " " + vul.descripcion)
-            
-        num_ips = num_ips + 1
+            print(str(num_vulns) + ". " + vul.titulo + ": " + vul.descripcion)
 
-        print("\nPorts:")
+        print("\nList of ports:\n")
         for port in elem.data_ports:
             num_ports = num_ports + 1
-            print(str(num_ports) + "." + port.protocol + " " + port.port)
+            print(str(num_ports) + ". " + port.protocol + " - " + port.port + " - " + port.service)
 
-    print("\nHay "+ str(num_ips) + " con " + str(num_vulns) + " vulnerabilidades")
+        
+        if len(elem.directories) > 0:
+            print("\nList of web directories:")
+            for iteration,it in enumerate(elem.directories):
+                num_dir = 0
+                print("\n* Port " + it.port + ":")
+                print("\n   HTTP_STATE  LENGHT    DIR     REDIR")
+                for i in it.list_directories:
+                    num_dir = num_dir + 1
+                    print(str(num_dir) + ".    " + str(i.HTTPResponse) + "    -  " + i.content_lenght + "  - " + i.dir + " -  " + i.redir)
+
+    print("\nHay "+ str(num_ips) + " IPs con " + str(num_vulns) + " vulnerabilidades")
+
+def aniadir_dir(ip, puerto, listdir):
+    dirList = []
+    dir = ""
+    existe_ip = False
+    pos_ip = 0
+
+    if len(listdir) > 0:
+        dir = textTohtml.Directories(puerto, listdir)
+        dirList.append(dir)
+
+        for iteration,item in enumerate(ipsList):
+            if item.ip == ip:
+                existe_ip = True
+                pos_ip = iteration
+                break
+
+        if existe_ip:
+            ipsList[pos_ip].directories.extend(dirList)
+        else:
+            data = textTohtml.Ip(ip, vulnList, portList, dirList)
+            ipsList.append(data)
+
+def parse_fuzzing():
+    for host in HTTPlist:
+        listdir = []
+        li = ""
+        h = host.split(":")
+        datos=leer_fich(dir_dirsearch + h[0] + "_p" + h[1] + ".json")
+        if datos!="":
+            dt=json.loads(datos)
+            for r in dt['results']:
+                for w in r['http://'+h[0]+':'+h[1]+'/']:
+                    if w['status'] >= 300 and w['status'] <= 399:
+                        li = textTohtml.ListDirectories("GET", w['status'], str(w['content-length']) + "B", w['path'],  w['redirect'])   
+                    else:
+                        li = textTohtml.ListDirectories("GET", w['status'], str(w['content-length']) + "B", w['path'],  "-") 
+                    listdir.append(li)
+            aniadir_dir(h[0], h[1], listdir)
 
 def get_cvss (severidad):
     cvss = 0
@@ -119,6 +171,7 @@ def get_cvss (severidad):
 def aniadir_vuln(vuelta, ip, puerto, severidad, cve, cwe, titulo, descripcion):
     vulnList = []
     portList = []
+    dirList = []
     existe_ip = False
     pos_ip = 0
     vuln = ""
@@ -135,11 +188,146 @@ def aniadir_vuln(vuelta, ip, puerto, severidad, cve, cwe, titulo, descripcion):
         if existe_ip:
             ipsList[pos_ip].vulnerabilidades.extend(vulnList)
         else:
-            data = textTohtml.Ip(ip, vulnList, portList)
+            data = textTohtml.Ip(ip, vulnList, portList, dirList)
             ipsList.append(data)
     elif vuln != "":
-        data = textTohtml.Ip(ip, vulnList, portList)
+        data = textTohtml.Ip(ip, vulnList, portList, dirList)
         ipsList.append(data)
+
+
+def parse_telnet():
+
+    for host in TLNTlist:
+        h = host.split(":")
+        datos=leer_fich("TELNET/data_telnet_" + h[0] + "_p" + h[1] + ".txt")  
+        telnet_creds = []
+        credential =  False
+        version = ""
+
+        if datos!="": 
+            datos = datos.split("\n")
+            for linea in datos:       
+                atrib = linea.split(" ")   
+                if "[32m[+]" in atrib[0]:
+                    for i in atrib:
+                        if i=="Login Successful:":
+                            credential =  True
+                            break
+
+                    if credential and len(atrib) == 7:
+                        telnet_creds.append(atrib[6])
+                    elif credential == False:
+                        atrib = linea.split("-") 
+                        version = atrib[1].replace(host,"")
+
+            if len(telnet_creds) > 0:
+                creds = "The following valid credentials have been listed:"
+                for i in telnet_creds:
+                    creds = creds + "\n" + i
+                aniadir_vuln(1, h[0], h[1], "HIGH", "-",  "-", "Known telnet credentials", creds)
+            
+            if version != "":
+                aniadir_vuln(1, h[0], h[1], "LOW", "-",  "-", "Known telnet version", version)
+
+
+def parse_ftp():
+
+    for host in FTPlist:
+        h = host.split(":")
+        datos=leer_fich("FTP/data_ftp_" + h[0] + "_p" + h[1] + ".txt")  
+        ftp_creds = []
+        
+        if datos!="": 
+            datos = datos.split("\n")
+            for linea in datos:
+                atrib = linea.split(" ")         
+                if "[32m[+]" in atrib[0]:
+                    if "Anonymous READ" in linea:
+                        aniadir_vuln(1, h[0], h[1], "MEDIUM", "-",  "-", "Anonymous FTP is enabled", "-")
+                    elif "FTP Banner:" in linea:
+                        l = linea.split("'")
+                        aniadir_vuln(1, h[0], h[1], "LOW", "-",  "-", "Known ftp version", l[1])
+                    elif "Login Successful:" in linea:
+                        atrib = linea.split(" ")
+                        l = len(atrib)
+                        ftp_creds.append(atrib[l-1])
+
+            if len(ftp_creds) > 0:
+                creds = "The following valid credentials have been listed:"
+                for i in ftp_creds:
+                    creds = creds + "\n" + i 
+                aniadir_vuln(1, h[0], h[1], "HIGH", "-",  "-", "Known ftp credentials", creds)
+
+def parse_enum_shares():
+
+    for host in SMBlist:
+        h = host.split(":")
+        datos=leer_fich("SMB/enum_shares_" + h[0] + "_p" + h[1] + ".txt")
+        guest_session = False
+        list_shares = False
+        accesible_shared = False
+        shares = ""
+
+        if datos!="":
+            datos = datos.split("\n")  
+            if len(datos) > 1:
+                shares = "The following samba share have been listed:\n"
+                for linea in datos:
+                    if "[+] Guest session" in linea:
+                        guest_session = True
+                    elif "Disk" in linea:
+                        list_shares = True
+                        shares = shares + "\n"
+                    elif "READ, WRITE" in linea or "READ" in linea or "READ ONLY" in linea or "WRITE" in linea or "r-" in linea:
+                        accesible_shared = True
+                        shares = shares + "\n"
+                    elif "Working on it..." not in linea:
+                        shares = shares + "\n"
+
+                if guest_session and list_shares and accesible_shared == False:
+                    aniadir_vuln(1, h[0], h[1], "LOW", "-",  "-", "Enumeration of Samba Shares without access", shares)
+                elif guest_session and list_shares and accesible_shared:
+                    aniadir_vuln(1, h[0], h[1], "HIGH", "-",  "-", "Enumeration of Samba Shares without access", shares)   
+
+
+def parse_smb():
+    
+    for host in SMBlist:
+        h = host.split(":")
+        datos=leer_fich("SMB/data_smb_" + h[0] + "_p" + h[1] + ".txt")  
+        
+        if datos!="": 
+            datos = datos.split("\n")
+            credential = False
+            characters = "'.\,"
+            smb_creds = []
+            version = ""
+
+            for linea in datos:
+                atrib = linea.split(" ")
+                if "[32m[+]" in atrib[0]:
+                    for i in atrib:
+                        if i=="Success:":
+                            credential =  True
+                            break
+                    if credential and len(atrib) == 7:
+                        cred = atrib[6]
+                        for x in range(len(characters)):
+                            cred = cred.replace(characters[x],"")
+                        smb_creds.append(cred)
+                    elif credential == False:
+                        atrib = linea.split("-") 
+                        version = atrib[1]
+            
+            if len(smb_creds) > 0:
+                creds = "The following valid credentials have been listed:"
+                for i in smb_creds:
+                    creds = creds + "\n" + i
+                aniadir_vuln(1, h[0], h[1], "HIGH", "-",  "-", "Known samba credentials", creds)
+            
+            if version != "":
+                aniadir_vuln(1, h[0], h[1], "LOW", "-",  "-", "Known samba version", version)
+ 
 
 def parse_ssh_audit():
     for host in SSHlist:
@@ -150,9 +338,10 @@ def parse_ssh_audit():
         pos_ip = 0
         vulnList = []
         portList = []
+        dirList = []
 
         h = host.split(":")
-        datos=leer_fich(dir_data_ssh + "_audit_" + h[0] + "_" + h[1] + ".xml")
+        datos=leer_fich(dir_ssh + "_audit_" + h[0] + "_" + h[1] + ".xml")
 
         if datos!="":
             datos = datos.split("\n")
@@ -186,13 +375,14 @@ def parse_ssh_audit():
             if existe_ip:
                 ipsList[pos_ip].vulnerabilidades.extend(vulnList)
             else:
-                data = textTohtml.Ip(h[0], vulnList, portList)
+                data = textTohtml.Ip(h[0], vulnList, portList, dirList)
                 ipsList.append(data)
 
 def parse_ssh_enum():
     for host in SSHlist:
         vulnList = []
         portList = []
+        dirList = []
         existe_ip = False
         descripcion = "-"
         count_valid_user = 0
@@ -201,7 +391,7 @@ def parse_ssh_enum():
 
         h = host.split(":")
 
-        datos=leer_fich(dir_data_ssh + "_enum_" + h[0] + "_" + h[1] + ".txt")
+        datos=leer_fich(dir_ssh + "_enum_" + h[0] + "_" + h[1] + ".txt")
         if datos!="":
             datos = datos.split("\n")
             if datos[0]!="Target host most probably is not vulnerable or already patched, exiting...":
@@ -227,7 +417,7 @@ def parse_ssh_enum():
             if existe_ip:
                 ipsList[pos_ip].vulnerabilidades.extend(vulnList)
             else:
-                data = textTohtml.Ip(h[0], vulnList , portList)
+                data = textTohtml.Ip(h[0], vulnList , portList, dirList)
                 ipsList.append(data)
 
         #Si queremos sacar los datos del sshUserEnum en json
@@ -237,11 +427,6 @@ def parse_ssh_enum():
                 #print("hay enumeracion")
 
 def parse_tls():
-    data = []
-    da = []
-    pos_ip = 0
-    vuln = ""
-    cvss = 0
 
     for host in TLSlist:
         h = host.split(":")
@@ -270,8 +455,17 @@ def parse_tls():
                     if i['severity'] == "CRITICAL" or i['severity'] == "HIGH" or i['severity'] == "MEDIUM" or i['severity'] == "LOW" or i['severity'] == "INFO":
                         if i['id'] == "secure_client_renego":
                             aniadir_vuln(vuelta, h[0], h[1], i['severity'], i["cve"], i["cwe"], "Secure client renegotiation", i["finding"])
+                        elif i['id'] == "secure_renego":
+                            aniadir_vuln(vuelta, h[0], h[1], i['severity'], "-", i["cwe"], "Secure renegotiation", i["finding"])
+                        elif i['id'] == "heartbleed":
+                            description = "An attacker can read 64 KB of information in the memory of the vulnerable service, and can access any critical information stored there, such as system credentials, tokens, certificates, etc."
+                            aniadir_vuln(vuelta, h[0], h[1], i['severity'], i["cve"], i["cwe"], "Heartbleed vulnerability", description)
+                        elif i['id'] == "CCS":
+                            description = "This vulnerability allows malicious intermediate nodes to intercept encrypted data and decrypt them while forcing SSL clients to use weak keys which are exposed to the malicious nodes."
+                            aniadir_vuln(vuelta, h[0], h[1], i['severity'], i["cve"], i["cwe"], "CCS Injection Vulnerability", description)
                         else:
-                            aniadir_vuln(vuelta, h[0], h[1], i['severity'], i["cve"], i["cwe"], i["id"], i["finding"])
+                            if i["id"] != "fallback_SCSV":
+                                aniadir_vuln(vuelta, h[0], h[1], i['severity'], i["cve"], i["cwe"], i["id"], i["finding"])
                     vuelta = vuelta +1
 
                 for i in severity['headerResponse']:
@@ -313,6 +507,7 @@ def parse_tls():
 def aniadir_puerto(vuelta, ip, protocolo, puerto, servicio, producto, version, estado):
     portList = []
     vulnList = []
+    dirList = []
     existe_ip = False
     existe_puerto = False
     pos_ip = 0
@@ -321,7 +516,6 @@ def aniadir_puerto(vuelta, ip, protocolo, puerto, servicio, producto, version, e
     if puerto != "-" and puerto != "":
         port = textTohtml.Ports(protocolo, puerto, servicio, producto, version, estado)
         portList.append(port)
-
         if vuelta > 0:
             for iteration,item in enumerate(ipsList):
                 if item.ip == ip:
@@ -331,13 +525,13 @@ def aniadir_puerto(vuelta, ip, protocolo, puerto, servicio, producto, version, e
             if existe_ip:
                 for item in ipsList:
                     for i in item.data_ports:
-                        if i.protocol == protocolo and  i.port == puerto:
+                        if i.protocol == protocolo and  i.port == puerto and item.ip == ip:
                             existe_puerto = True
                             break
                 if not existe_puerto:     
                     ipsList[pos_ip].data_ports.extend(portList)
             else:
-                data = textTohtml.Ip(ip, vulnList, portList)
+                data = textTohtml.Ip(ip, vulnList, portList, dirList)
                 ipsList.append(data)
         else:
             for iteration,item in enumerate(ipsList):
@@ -348,8 +542,34 @@ def aniadir_puerto(vuelta, ip, protocolo, puerto, servicio, producto, version, e
             if existe_ip:
                 ipsList[pos_ip].data_ports.extend(portList)
             else:
-                data = textTohtml.Ip(ip, vulnList, portList)
+                data = textTohtml.Ip(ip, vulnList, portList, dirList)
                 ipsList.append(data)
+
+def parse_http_methods():
+    for host in HTTPlist:
+        h = host.split(":")
+        tree = ET.parse("WEB/METHODS_HTTP/nmap_http_methods_" + h[0] + "_p" + h[1] + ".xml")
+        root = tree.getroot()
+
+        for host in root.iter('host'):
+            for ports in host.iter('ports'):
+                for port in ports.iter('port'):
+                    list_methods = ""
+                    for state in port.iter('state'):
+                        if state.attrib['state'] == "open":
+                            for service in port.iter('service'):
+                                if "http" in service.attrib['name']:
+                                   for script in port.iter('script'):
+                                       if "http-methods" in script.attrib['id']:
+                                            methods = script.attrib['output']
+                                            m = methods.split(" ")
+                                            for i in m:    
+                                                list_methods = "Supported Methods: " 
+                                                if i != "&#xA;" and i != "Supported" and i != "Methods:" and i != "GET" and i != "HEAD" and i != "POST":
+                                                    list_methods = list_methods + i + ", "
+                    l = len("Supported Methods: ")
+                    if list_methods != "Supported Methods: " and len(list_methods) != l and list_methods != "":
+                        aniadir_vuln(1, h[0], h[1], "MEDIUM", "-",  "-", "Insecure HTTP methods supported", list_methods)
 
 def nmap_parser(dir):
     tree = ET.parse(dir)
@@ -359,10 +579,10 @@ def nmap_parser(dir):
         IPaddr = '-'
         protocol='-'
         p='-'
-        service='-'
+        serv='-'
         prod='-'
-        version='-'
-        state='-'
+        v='-'
+        s='-'
         for address in host.iter('address'):
             vuelta = 0
             if "ipv4" in (address.attrib['addrtype']):
@@ -382,8 +602,8 @@ def nmap_parser(dir):
                                         v = service.attrib['version']
                                     if "product" in atributos:
                                         prod = service.attrib['product']
-                        data_port = str(IPaddr) + ":" + str(protocol) + ":" + str(p) + ":" + str(serv) + ":" + str(prod) + ":" + str(v) + ":" + str(s)
-                        PortsList.append(data_port)
+                                    if "tunnel" in atributos and serv!="https":
+                                        serv = serv + "/" + service.attrib['tunnel']
                         aniadir_puerto (vuelta, IPaddr, protocol, p, serv, prod, v, s)
                         vuelta = vuelta + 1
 
@@ -407,43 +627,70 @@ def nmap_TCP_xml_parser():
                                 SSHlist.append(IPaddr + ":" + port.attrib['portid'])
                             elif ("tls" in service.attrib['name'] or "ssl" in service.attrib['name'] or "https" in service.attrib['name']):
                                 TLSlist.append(IPaddr + ":" + port.attrib['portid'])
-                            elif ("smb" in service.attrib['name'] or "netbios" in service.attrib['name']):
-                                SMBlist.append(IPaddr)
+                            elif ("smb" in service.attrib['name'] or "netbios" in service.attrib['name'] or "microsoft-ds" in service.attrib['name']):
+                                SMBlist.append(IPaddr+ ":" + port.attrib['portid'])
+                            elif ("ftp" in service.attrib['name'] or "ftps" in service.attrib['name']):
+                                FTPlist.append(IPaddr+ ":" + port.attrib['portid'])
+                            elif ("telnet" in service.attrib['name']):
+                                TLNTlist.append(IPaddr+ ":" + port.attrib['portid'])
+                            elif ("http" in service.attrib['name']):
+                                for service in port.iter('service'):
+                                    atributos = service.attrib
+                                    if "tunnel" in atributos:
+                                        if "ssl" in service.attrib['tunnel']:
+                                            TLSlist.append(IPaddr + ":" + port.attrib['portid'])
+                                HTTPlist.append(IPaddr+ ":" + port.attrib['portid'])
                             else:
                                 try:
                                     if "ssl" in service.attrib['tunnel']:
                                         TLSlist.append(IPaddr + ":" + port.attrib['portid'])
                                 except KeyError:
                                     pass
-    return SSHlist, TLSlist, SMBlist
+    return SSHlist, TLSlist, SMBlist, FTPlist, TLNTlist, HTTPlist
 
 
 def main():
-    
-    #se añade para una prueba
+    #se añaden para una prueba
+    #modo_agresivo =  True
     #nmap_TCP_xml_parser()
+    #print("\n ENTRAMOS EN MAIN PARSE\n")
 
     #para sacar los datos de los puertos
     nmap_parser(dir_nmap_tcp)
     nmap_parser(dir_nmap_udp)
 
-    if len(SSHlist)>0:
+    if len(SSHlist) > 0:
         parse_ssh_audit()
         parse_ssh_enum()
-    if len(TLSlist)>0:
+
+    if len(TLSlist) > 0:
         parse_tls()
 
-    #Para imprimir la lista de vulnerabilidades
-    #print("LISTA SIN ORDENAR:")
-    #imprimir_ipsList(ipsList)
+    if len(SMBlist)>0:
+        parse_enum_shares()
+        parse_smb()
+
+    if len(FTPlist)>0:
+        parse_ftp()
+
+    if len(TLNTlist)>0:
+        parse_telnet()
+
+    if len(HTTPlist) > 0:
+        parse_http_methods()
+        
     ordenar_ipsList()
+
+    if len(HTTPlist) > 0 and modo_agresivo:
+        parse_fuzzing()
+
     #Para imprimir la lista de vulnerabilidades ordenada
-    #print("\nLISTA ORDENADA:")
+    #print("\n------------ SORTED LIST ------------")
     #imprimir_ipsList(ipsList_ordenada)
 
-    nombreHtml1 = textTohtml.envuelveDatosEnHTML(ipsList_ordenada)
+    nombreHtml1 = textTohtml.envuelveDatosEnHTML(ipsList_ordenada, modo_agresivo, HTTPlist)
 
-    nombreHtml= htmlTopdf.envuelveDatosEnHTML(ipsList_ordenada)
+    nombreHtml= htmlTopdf.envuelveDatosEnHTML(ipsList_ordenada, modo_agresivo, HTTPlist)
 
     htmlTopdf.ToPdf(nombreHtml)
 

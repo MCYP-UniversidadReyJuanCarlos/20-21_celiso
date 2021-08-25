@@ -5,6 +5,8 @@ import os, sys, json
 from optparse import OptionParser
 from typing import Protocol
 import xml.etree.ElementTree as ET
+import datetime
+from webbrowser import open_new_tab
 import warnings
 import pdfkit
 
@@ -21,13 +23,9 @@ TLSlist = []
 SMBlist = []
 PortsList = []
 
-def envuelveDatosEnHTML(ipList):
-    import datetime
-    from webbrowser import open_new_tab
+def envuelveDatosEnHTML(ipList, modo_agresivo, list_http):
 
     ahora = datetime.datetime.today().strftime("%Y%m%d-%H%M%S")
-
-    print("Generando informe ...")
 
     nombreArchivo = "Vulnerability_Assesment_Report_" + ahora + ".html"
     f = open(nombreArchivo,'w')
@@ -212,6 +210,10 @@ def envuelveDatosEnHTML(ipList):
         #table_title {
             background: #b1aeae;
         }
+       
+        #table_dir {
+            width: 1300px;
+        }
 
         th, td {
             text-align: center;
@@ -379,13 +381,71 @@ def envuelveDatosEnHTML(ipList):
                             </tr>"""
 
         data_html = data_html + """</tbody>
+                </table>
+            </div>"""
+
+        existe = False
+
+        for h in list_http:
+            lh = h.split(":")
+            if ip.ip == lh[0]:
+                existe = True
+                break
+
+        if modo_agresivo and existe:
+            data_html = data_html + """<div class="slds-m-horizontal_xx-large">
+                    <ul class="slds-text-heading_small"><li> Directory listing :</li></u>
+                    </br>"""
+
+            for dir in ip.directories:
+                data_html = data_html + """<ol><li class="slds-m-horizontal_xx-large" type="disc">Port """ + dir.port + """:</li></ol>
+                    <div class="slds-m-horizontal_xx-large slds-text-heading_large" align="center" style="width:auto">
+                        <table id="table_dir">
+                            <thead>
+                                <tr class="slds-line-height_reset">
+                                    <th class="" scope="col">
+                                        <div class="slds-truncate" title="Method">Method</div>
+                                    </th>
+                                    <th class="" scope="col">
+                                        <div class="slds-truncate" title="HTTPResponse">HTTP Response</div>
+                                    </th>
+                                    <th class="" scope="col">
+                                        <div class="slds-truncate" title="Content-Lenght">Content-lenght</div>
+                                    </th>
+                                    <th class="" scope="col">
+                                        <div class="slds-truncate" title="Directory">Directory</div>
+                                    </th>
+                                    <th class="" scope="col">
+                                        <div class="slds-truncate" title="Redirection">Redirection</div>
+                                    </th>
+                            </tr>
+                            </thead>
+                            <tbody>"""
+                for d in dir.list_directories:
+                    data_html = data_html + """<tr class="slds-hint-parent">
+                                <td data-label="Method">
+                                    <div class="slds-truncate">""" + d.method + """</div>
+                                </td>
+                                <td data-label="HTTPResponse">
+                                    <div class="slds-truncate">""" + str(d.HTTPResponse) + """</div>
+                                </td>
+                                <td data-label="Content-Lenght">
+                                    <div class="slds-truncate">""" + d.content_lenght + """</div>
+                                </td>
+                                <td data-label="Directory">
+                                    <div class="slds-truncate">""" + d.dir + """</div>
+                                </td>
+                                <td data-label="Redirection">
+                                    <div class="slds-truncate">""" + d.redir + """</div>
+                                </td>
+                            </tr>"""
+                data_html = data_html + """</tbody>
                     </table>
-                </div>
-            </div>
-            <hr size="2px" color="grey" />"""
-    
-    data_html = data_html + """
-        </div>
+                </div>"""
+
+        data_html = data_html + """</div>
+        <hr size="2px" color="grey" />
+    </div>
 </body>
 </html>"""
 
@@ -395,16 +455,16 @@ def envuelveDatosEnHTML(ipList):
     return nombreArchivo
 
 def ToPdf (nombreArchivo):
-    print("Generando informe en pdf...")
+    print("\nGenerating PDF report...")
     nombre = nombreArchivo.split(".")
     options = {'quiet': ''}
     pdfkit.from_file(nombreArchivo, nombre[0] + ".pdf", options=options)
-    print("\nPDF generado con exito!!")
+    print("\nPDF successfully generated!!")
 
 def main():
-    print("Generando informe en pdf...")
+    print("Generating PDF report...")
     #ToPdf("html_prueba.html")
-    print("\nPDF generado con exito!!")
+    print("\nPDF successfully generated!!")
 
 if __name__ == "__main__":
     main()
