@@ -1,0 +1,54 @@
+{
+    "info": {
+        "args": "dirsearch.py -u scanme.nmap.org -e asp,aspx,html,php,txt,jpg,png,old,bak,zip,json,xml,xls,csv,tsv ../Seclists/SecLists/Discovery/Web-Content/common.txt -t 10 -f -b -x 400,401,404,403,406,405,500 --format json -o result_dirsearch.json",
+        "time": "Thu Jul 22 18:37:21 2021"
+    },
+    "results": [
+        {
+            "http://scanme.nmap.org:80/": [
+                {
+                    "content-length": 316,
+                    "path": "/.svn",
+                    "redirect": "http://scanme.nmap.org/.svn/",
+                    "status": 301
+                },
+                {
+                    "content-length": 318,
+                    "path": "/images",
+                    "redirect": "http://scanme.nmap.org/images/",
+                    "status": 301
+                },
+                {
+                    "content-length": 947,
+                    "path": "/images/",
+                    "redirect": null,
+                    "status": 200
+                },
+                {
+                    "content-length": 7581,
+                    "path": "/index.html",
+                    "redirect": null,
+                    "status": 200
+                },
+                {
+                    "content-length": 7581,
+                    "path": "/index",
+                    "redirect": null,
+                    "status": 200
+                },
+                {
+                    "content-length": 318,
+                    "path": "/shared",
+                    "redirect": "http://scanme.nmap.org/shared/",
+                    "status": 301
+                },
+                {
+                    "content-length": 1721,
+                    "path": "/shared/",
+                    "redirect": null,
+                    "status": 200
+                }
+            ]
+        }
+    ]
+}
