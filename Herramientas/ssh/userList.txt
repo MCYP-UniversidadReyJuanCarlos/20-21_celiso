@@ -1,3 +1,4 @@
+anonymous
 root
 mail
 daemon
@@ -7,3 +8,10 @@ system
 admin
 ntp
 mysql
+administrator
+guest
+none
+helpassistant
+aspnet
+nobody
+sys
