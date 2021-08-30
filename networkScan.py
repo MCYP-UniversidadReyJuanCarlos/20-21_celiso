@@ -146,9 +146,9 @@ def crea_fich(name_fich, list):
 def nmap(hosts, modo_agresivo):
     if modo_agresivo:
         print("\n-------------  NMAP TCP -------------\n")
-        os.system("nmap -A -T5 -Pn --min-rate 10000 -p- " + hosts +" -oX " + dir_nmap_tcp)
+        os.system("nmap -A -T5 -Pn --min-rate 20000 -p- " + hosts +" -oX " + dir_nmap_tcp)
         print("\n-------------  NMAP UDP -------------\n")
-        os.system("nmap -sU -sV -Pn -T5 --min-rate 10000 --top-ports 1500 " + hosts +" -oX " + dir_nmap_udp)
+        os.system("nmap -sU -T5 -Pn --min-rate 20000 --top-ports 100 " + hosts +" -oX " + dir_nmap_udp)
     else:
         print("\n-------------  NMAP TCP -------------\n")
         os.system("nmap -A -T5 -Pn --min-rate 20000 --top-ports 32500 " + hosts +" -oX " + dir_nmap_tcp)
