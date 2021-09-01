@@ -22,25 +22,36 @@ realizar los escaneos se sirve de otras herramientas que están en bash y python
 De momento la herramienta realiza:
 
   - Se realiza una comprobación de directorios, módulos y herramientas que son necesarios para el uso de la herramienta.
-  - Descubrimiento de puertos con nmap
+  - Descubrimiento de puertos TCP y UDP abiertos con nmap (dependiendo de si el análisis es ligero o agresivo se  realizará de una forma u otra).
   - Si las máquinas tienen puertos SSH abiertos se mira los cifrados débiles y si existe enumeración de usuarios.
-  - Si las máquinas tienen puertos SSL abiertos se le realiza el testssl. 
-  - Cuando la herramienta acaba de realizar todos los análisis, saca un informe en HTML con el resultado del análisis de cada IP y en PDF. Este informe incluye un índice y por cada IP una tabla de recuento de vulnerabilidades, una tabla de visibilidad de cada máquina, es decir, una tabla en la que se vean los puertos TCP/UDP que están abiertos y con qué servicios y una tabla de vulnerabilidades.
+  - Si las máquinas tienen puertos SSL abiertos se le realiza el testssl.
+  - Si las máquinas tienen puertos SMB abiertos se realiza una enumeración de shares, intenta realizar la detección de la versión de samba y fuerza bruta en el login.
+  - Si las máquinas tiene puertos FTP abiertos comprueba si existe sesión anónima, intenta realizar la detección de la versión de FTP y fuerza bruta en el login.
+  - Si las máquinas tienen puertos TELNET abiertos intenta realizar la detección de la versión de FTP y fuerza bruta en el login.
+  - Si las máquinas tienen puertos HTTP/HTTPS abiertos comprueba los métodos HTTP usados y si el análisis se realiza en modo agresivo se realiza fuzzing de directorios web.
+  - Cuando la herramienta acaba de realizar todos los análisis, networkScan trata toda la información recopilada por las herramientas y saca un informe en HTML y en PDF con el resultado del análisis de cada IP escaneada. Este informe incluye un índice y por cada IP una tabla de recuento de vulnerabilidades, una tabla de visibilidad de cada máquina, es decir, una tabla en la que se vean los puertos TCP/UDP que están abiertos y con qué servicios, una tabla de vulnerabilidades ordenada por criticidad con código de colores (Los niveles de criticidad que se han establecido son (de más crítico a menos critico): 1) Critico (morado), 2) Alto (rojo), 3) Medio (naranja), 4) Bajo (verde) y 5) Info (azul)) y si se realiza un análisis agresivo tendrá una sección llamada "Directory listing" con el listado de directorios web encontrados en cada puerto.
 
-Las herramientas necesarias están en el repositorio. 
+Las herramientas que utiliza networkScan son: nmap, ssh-audit, exploit de 
+enumeración de usuarios ssh, testssl, smbmap, metasploit y dirsearch.
 
-De momento las herramientas que utiliza networkScan son nmap, ssh-audit, exploit de 
-enumeración de usuarios ssh, testssl…
+La herramienta cuenta con dos modos de escaneo: modo liegro y modo agresivo. Podemos ver las características de cada modo en la sigueinte tabla:
 
-Se tiene pensado mirar más servicios y analizarlos como SMB, FTP, TELNET, DNS, añadir en puertos SSL 
-fuzzing de directorios...
+| |Modo Ligero|Modo Agresivo|
+|:----|:----|:----|
+|Comprobaciones previas|Si|Si|
+|Escaneo de puertos TCP|Escanea los 32500 puertos más comunes.|Escanea todos los puertos.|
+|Escaneo de puertos UDP|Escanea los 50 puertos más comunes.|Escanea los 100 puertos más comunes.|
+|Análisis SSH|Detección de cifrados vulnerables e intento de enumeración de  usuarios.|Detección de cifrados vulnerables e intento de enumeración de  usuarios.|
+|Análisis SSL|Detección de vulnerabilidades relacionadas con SSL.|Detección de vulnerabilidades relacionadas con SSL.|
+|Análisis SMB|Enumeración de shares, detección de versión de SMB y fuerza bruta en el login.|Enumeración de shares, detección de versión de SMB y fuerza bruta en el login.|
+|Análisis FTP|Comprobación de existencia de sesión anónima, detección de versión de FTP y fuerza bruta en el login.|Comprobación de existencia de sesión anónima, detección de versión de FTP y fuerza bruta en el login.|
+|Análisis TELNET|Detección de versión de TELNET y fuerza bruta en el login.|Detección de versión de TELNET y fuerza bruta en el login.|
+|Análisis HTTP/HTTPS|Detección de métodos HTTP usados.|Detección de métodos HTTP usados y fuzzing de directorios web.|
+|Consumo de ancho de banda*|Medio-Bajo|Alto|
+|N.º de peticiones realizadas*|Medio-Bajo|Alto|
+|Tiempo de escaneo*|Medio-Bajo|Alto|
 
-Una vez acabada la herramienta se tiene pensado añadir dos opciones de intensidad en la 
-herramienta, es decir, si se quiere realizar un escaneo suave o intenso.
-
-Otro objetivo es que no salgan por consola los resultados de las herramientas que se van 
-lanzando y en su lugar salgan trazas de texto o una barra de progreso. Esto esta todavía en
-desarrollo.
+(*) Estos valores varían en función del volumen de la red que se esté escaneando por lo que no se puede dar una cifra concreta.
 
 ## Prerequisitos:
 
@@ -107,8 +118,10 @@ Formas de uso y opciones:
 
 - testssl: https://github.com/drwetter/testssl.sh
 
+- smbmap: https://github.com/ShawnDEvans/smbmap
+
 - metasploit: https://www.metasploit.com/
 
-- smbmap: https://github.com/ShawnDEvans/smbmap
+- dirsearch: https://github.com/maurosoria/dirsearch
 
 - css: https://www.lightningdesignsystem.com/resources/downloads/
