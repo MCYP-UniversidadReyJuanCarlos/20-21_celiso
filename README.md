@@ -55,9 +55,9 @@ La herramienta cuenta con dos modos de escaneo: modo liegro y modo agresivo. Pod
 
 ## Prerequisitos:
 
-- Disponible para distribuciones Linux
+- Disponible para distribuciones Linux.
 
-- Es necessario tener instalado python3
+- Es necesario tener instalado python3.
   
 - Es necesario tener instalado "nmap":
   - sudo apt-get install nmap
